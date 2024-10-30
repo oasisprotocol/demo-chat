@@ -19,7 +19,7 @@ const accounts: HDAccountsUserConfig = {
 
 const config: HardhatUserConfig = {
   solidity: {
-    compilers: [{ version: "0.8.24" }],
+    compilers: [{ version: "0.8.27" }],
     settings: {
       optimizer: {
         enabled: true,
