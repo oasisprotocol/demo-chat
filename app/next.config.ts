@@ -6,7 +6,7 @@ import withPWA from "next-pwa"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config) => {
+  webpack: (config: any) => {
     // Required for RainbowKit
     config.resolve.fallback = { fs: false, net: false, tls: false }
     config.externals.push("pino-pretty", "lokijs", "encoding")
