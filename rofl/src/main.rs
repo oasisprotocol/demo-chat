@@ -47,17 +47,6 @@ impl App for MessagingApp {
     }
 
     async fn on_runtime_block(self: Arc<Self>, env: Environment<Self>, _round: u64) {
-        // Fetch and process groups and memberships
-        match self.get_all_groups(&env).await {
-            Ok(groups) => println!("Current Groups: {:?}", groups),
-            Err(e) => println!("Error fetching groups: {:?}", e),
-        }
-
-        match self.get_all_pending_memberships(&env).await {
-            Ok(pending) => println!("Pending Memberships: {:?}", pending),
-            Err(e) => println!("Error fetching pending memberships: {:?}", e),
-        }
-
         // Process any pending memberships
         if let Err(err) = self.process_pending_memberships(&env).await {
             println!("Failed to process pending memberships: {:?}", err);

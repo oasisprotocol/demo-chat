@@ -1,21 +1,12 @@
-import "@nomicfoundation/hardhat-toolbox-viem"
-import "@nomicfoundation/hardhat-viem"
+import "@nomicfoundation/hardhat-toolbox"
+import "@nomicfoundation/hardhat-ethers"
 import "dotenv/config"
 import "hardhat-contract-sizer"
 import "./scripts/generate"
 import "./scripts/deploy"
 import { HardhatUserConfig } from "hardhat/config"
-import { HDAccountsUserConfig } from "hardhat/types"
 
-const mnemonic = process.env.MNEMONIC
-if (!mnemonic) {
-  throw new Error("Please set your MNEMONIC in a .env file")
-}
-
-const accounts: HDAccountsUserConfig = {
-  mnemonic,
-  count: 100,
-}
+const accounts = process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : undefined
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -38,34 +29,20 @@ const config: HardhatUserConfig = {
     localhost: {
       url: "http://localhost:8545",
     },
-    sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "https://rpc.ankr.com/eth_sepolia",
+    sapphire: {
+      url: "https://sapphire.oasis.io",
       accounts,
+      chainId: 0x5afe,
     },
-    optimism_sepolia: {
-      url:
-        process.env.OPTIMISM_SEPOLIA_RPC_URL ||
-        "https://rpc.ankr.com/optimism_sepolia",
+    'sapphire-testnet': {
+      url: "https://testnet.sapphire.oasis.io",
       accounts,
+      chainId: 0x5aff,
     },
-    base_sepolia: {
-      url:
-        process.env.BASE_SEPOLIA_RPC_URL || "https://rpc.ankr.com/base_sepolia",
+    'sapphire-localnet': {
+      url: "http://localhost:8545",
       accounts,
-    },
-    arbitrum_sepolia: {
-      url:
-        process.env.ARBITRUM_SEPOLIA_RPC_URL ||
-        "https://rpc.ankr.com/arbitrum_sepolia",
-      accounts,
-    },
-    mumbai: {
-      url: process.env.MUMBAI_RPC_URL || "https://rpc.ankr.com/polygon_mumbai",
-      accounts,
-    },
-    fuji: {
-      url: process.env.FUJI_RPC_URL || "https://rpc.ankr.com/avalanche_fuji",
-      accounts,
+      chainId: 0x5afd,
     },
   },
   gasReporter: {

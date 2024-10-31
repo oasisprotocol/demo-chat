@@ -1,33 +1,29 @@
 import { task } from "hardhat/config"
-import { save } from "./utils/save"
-import { verify } from "./utils/verify"
+import { bech32 } from "bech32";
 
 task("deploy", "📰 Deploys a contract, saves the artifact and verifies it.")
-  .addParam("contract", "Name of the contract to deploy.", "Counter")
+  .addParam("contract", "Name of the contract to deploy.", "Messaging")
   .addOptionalVariadicPositionalParam(
     "args",
     "Constructor arguments for the contract"
   )
   .addFlag("save", "Flag to indicate whether to save the contract or not")
   .addFlag("verify", "Flag to indicate whether to verify the contract or not")
-  .setAction(async (args, { viem, network, run }) => {
+  .setAction(async (args, { ethers, network, run }) => {
     await run("compile")
 
-    const constructorArgs = args.args || []
+    const {words} = bech32.decode('rofl1qqn9xndja7e2pnxhttktmecvwzz0yqwxsquqyxdf');
+    const rawAppID = new Uint8Array(bech32.fromWords(words));
 
     console.log(`Deploying ${args.contract} to ${network.name}...`)
 
     try {
-      const Contract = await viem.deployContract(args.contract, constructorArgs)
+      const contract = await ethers.deployContract(args.contract, [rawAppID])
+      await contract.waitForDeployment()
 
       console.log(
-        `📰 Contract ${args.contract} deployed to ${network.name} at address: ${Contract.address}`
+        `📰 Contract ${args.contract} deployed to ${network.name} at address: ${contract.target}`
       )
-
-      const chainId = (await viem.getPublicClient()).chain.id
-
-      args.save && (await save(chainId, Contract.address, Contract.abi))
-      args.verify && (await verify(run, Contract.address, []))
     } catch (error) {
       console.error("Deployment failed:", error)
     }
