@@ -16,6 +16,7 @@ struct GroupCriteria {
 #[allow(dead_code)]
 #[derive(Debug)]
 struct Group {
+    group_id: u64,
     name: String,
     members: Vec<String>,
     criteria: GroupCriteria,
@@ -112,8 +113,9 @@ impl MessagingApp {
                 let criteria_tuple = group_tuple[2].clone().into_tuple().unwrap();
 
                 Group {
-                    name: group_tuple[0].clone().into_string().unwrap(),
-                    members: group_tuple[1]
+                    group_id: group_tuple[0].clone().into_uint().unwrap().as_u64(),
+                    name: group_tuple[1].clone().into_string().unwrap(),
+                    members: group_tuple[2]
                         .clone()
                         .into_array()
                         .unwrap()
@@ -128,7 +130,7 @@ impl MessagingApp {
                         ),
                         required_amount: criteria_tuple[2].clone().into_uint().unwrap().as_u64(),
                     },
-                    exists: group_tuple[3].clone().into_bool().unwrap(),
+                    exists: group_tuple[4].clone().into_bool().unwrap(),
                 }
             })
             .collect();
@@ -202,16 +204,21 @@ impl MessagingApp {
         let pending = self.get_all_pending_memberships(env).await?;
         let groups = self.get_all_groups(env).await?;
 
+        println!("Groups: {:?}", groups);
+        println!("Pending: {:?}", pending);
+        println!("====================");
+
         for membership in pending {
             // Since we don't have group_id in the Group struct, we'll need to process all groups
             // that exist and match other criteria
             for group in groups.iter().filter(|g| g.exists) {
                 println!("Group: {:?}", group);
+                println!("Membership: {:?}", membership);
                 // Here you would implement the token balance check logic
                 // For example:
                 // if verify_token_balance(membership.member, group.criteria).await? {
 
-                let mut tx = self.new_transaction(
+                let mut tx: oasis_runtime_sdk::types::transaction::Transaction = self.new_transaction(
                     "evm.Call",
                     module_evm::types::Call {
                         address: MESSAGING_CONTRACT_ADDRESS.parse().unwrap(),
@@ -239,7 +246,6 @@ impl MessagingApp {
                     ),
                     Err(e) => println!("Failed to add member: {:?}", e),
                 }
-                // }
             }
         }
 

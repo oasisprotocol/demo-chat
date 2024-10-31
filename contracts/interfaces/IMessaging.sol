@@ -18,6 +18,7 @@ interface IMessaging {
     /// @notice Stores group information
     /// @dev Maps groupId => Group struct
     struct Group {
+        uint256 groupId;
         string name;
         address[] members;
         GroupCriteria criteria;

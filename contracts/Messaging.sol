@@ -104,6 +104,7 @@ contract Messaging is IMessaging, IErrors {
         allGroupIds.push(groupId);
 
         groups[groupId] = Group({
+            groupId: groupId,
             name: name,
             members: members,
             criteria: GroupCriteria({
