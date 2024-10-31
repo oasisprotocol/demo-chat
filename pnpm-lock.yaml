@@ -14,6 +14,9 @@ importers:
       '@nomicfoundation/hardhat-viem':
         specifier: ^2.0.3
         version: 2.0.3(hardhat@2.22.6(ts-node@10.9.2(@types/node@20.14.11)(typescript@5.5.3))(typescript@5.5.3))(typescript@5.5.3)(viem@2.17.5(typescript@5.5.3))
+      '@oasisprotocol/sapphire-contracts':
+        specifier: ^0.2.11
+        version: 0.2.11
       '@openzeppelin/contracts':
         specifier: ^5.0.2
         version: 5.0.2
@@ -356,6 +359,9 @@ packages:
   '@nomicfoundation/solidity-analyzer@0.1.2':
     resolution: {integrity: sha512-q4n32/FNKIhQ3zQGGw5CvPF6GTvDCpYwIf7bEY/dZTZbgfDsHyjJwURxUJf3VQuuJj+fDIFl4+KkBVbw4Ef6jA==}
     engines: {node: '>= 12'}
+
+  '@oasisprotocol/sapphire-contracts@0.2.11':
+    resolution: {integrity: sha512-SS6xxiuE/O4uiWd+cIINhZimpdSdKQDHvc8fof5L6jSIinoPfIefYp+c2W+xuY2RM1CoaYO/OT0bP9/RLatcMA==}
 
   '@openzeppelin/contracts@5.0.2':
     resolution: {integrity: sha512-ytPc6eLGcHHnapAZ9S+5qsdomhjo6QBHTDRRBFfTxXIpsicMhVPouPgmUPebZZZGX7vt9USA+Z+0M0dSVtSUEA==}
@@ -2494,6 +2500,10 @@ snapshots:
       '@nomicfoundation/solidity-analyzer-linux-x64-gnu': 0.1.2
       '@nomicfoundation/solidity-analyzer-linux-x64-musl': 0.1.2
       '@nomicfoundation/solidity-analyzer-win32-x64-msvc': 0.1.2
+
+  '@oasisprotocol/sapphire-contracts@0.2.11':
+    dependencies:
+      '@openzeppelin/contracts': 5.0.2
 
   '@openzeppelin/contracts@5.0.2': {}
 

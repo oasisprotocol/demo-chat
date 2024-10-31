@@ -3,8 +3,11 @@ pragma solidity ^0.8.27;
 
 import "./interfaces/IMessaging.sol";
 import "./interfaces/IErrors.sol";
+import {Subcall} from "@oasisprotocol/sapphire-contracts/contracts/Subcall.sol";
 
 contract Messaging is IMessaging, IErrors {
+    bytes21 public roflAppID;
+
     /// @notice Stores direct messages between two users
     /// @dev Maps sender => receiver => array of messages
     mapping(address => mapping(address => Message[])) private directMessages;
@@ -23,6 +26,10 @@ contract Messaging is IMessaging, IErrors {
 
     /// @notice Counter for generating unique group IDs
     uint256 private nextGroupId = 1;
+
+    constructor(bytes21 _roflAppID) {
+        roflAppID = _roflAppID;
+    }
 
     /// @notice Sends a direct message to another user
     /// @param to The recipient's address
