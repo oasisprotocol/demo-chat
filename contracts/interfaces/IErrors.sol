@@ -14,6 +14,9 @@ interface IErrors {
     error InvalidTokenAddress();
     error InvalidRequiredAmount();
 
+    error AlreadyPending();
+    error NotPendingMember();
+
     /// @notice Thrown when attempting to interact with a group that doesn't exist
     error GroupDoesNotExist();
 

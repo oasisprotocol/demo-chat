@@ -24,6 +24,12 @@ interface IMessaging {
         bool exists;
     }
 
+    /// @notice Struct to store pending membership information
+    struct PendingMembership {
+        uint256 groupId;
+        address member;
+    }
+
     event DirectMessageSent(
         address indexed from,
         address indexed to,
@@ -35,6 +41,10 @@ interface IMessaging {
         string content
     );
     event GroupCreated(uint256 indexed groupId, string name, address creator);
+    event GroupJoinRequested(
+        uint256 indexed groupId,
+        address indexed requester
+    );
     event MemberAdded(
         uint256 indexed groupId,
         address indexed newMember,

@@ -12,6 +12,9 @@ contract Messaging is IMessaging, IErrors {
     /// @notice Counter for generating unique group IDs
     uint256 private nextGroupId = 1;
 
+    /// @notice Stores all active group IDs
+    uint256[] private allGroupIds;
+
     /// @notice Stores direct messages between two users
     /// @dev Maps sender => receiver => array of messages
     mapping(address => mapping(address => Message[])) private directMessages;
@@ -35,6 +38,13 @@ contract Messaging is IMessaging, IErrors {
     /// @notice Tracks whether a user has exchanged messages with another user
     /// @dev Maps user address => mapping of addresses => bool
     mapping(address => mapping(address => bool)) private isContact;
+
+    /// @notice Pending members for a group
+    /// @dev Maps groupId => array of pending member addresses
+    mapping(uint256 => address[]) private pendingMembers;
+
+    /// @notice Modified addGroupMember to remove from pending list
+    mapping(uint256 => mapping(address => bool)) private isPending;
 
     constructor(bytes21 _roflAppID) {
         roflAppID = _roflAppID;
@@ -91,6 +101,8 @@ contract Messaging is IMessaging, IErrors {
         userGroups[msg.sender].push(nextGroupId);
 
         uint256 groupId = nextGroupId++;
+        allGroupIds.push(groupId);
+
         groups[groupId] = Group({
             name: name,
             members: members,
@@ -128,6 +140,19 @@ contract Messaging is IMessaging, IErrors {
         emit GroupMessageSent(groupId, msg.sender, content);
     }
 
+    /// @notice Request to join a group
+    /// @param groupId The ID of the group to join
+    function requestToJoinGroup(uint256 groupId) external {
+        if (!groups[groupId].exists) revert GroupDoesNotExist();
+        if (isGroupMember(groupId, msg.sender)) revert AlreadyGroupMember();
+        if (isPending[groupId][msg.sender]) revert AlreadyPending();
+
+        pendingMembers[groupId].push(msg.sender);
+        isPending[groupId][msg.sender] = true;
+
+        emit GroupJoinRequested(groupId, msg.sender);
+    }
+
     /// @notice Adds a new member to an existing group
     /// @param groupId The ID of the group
     /// @param newMember The address of the new member
@@ -137,10 +162,14 @@ contract Messaging is IMessaging, IErrors {
         Subcall.roflEnsureAuthorizedOrigin(roflAppID);
 
         if (!groups[groupId].exists) revert GroupDoesNotExist();
-        // if (!isGroupMember(groupId, msg.sender)) revert OnlyMembersCanAdd();
         if (newMember == address(0)) revert InvalidMemberAddress();
         if (isGroupMember(groupId, newMember)) revert AlreadyGroupMember();
+        if (!isPending[groupId][newMember]) revert NotPendingMember();
 
+        // Remove from pending list
+        _removePendingMember(groupId, newMember);
+
+        // Add to group
         groups[groupId].members.push(newMember);
         userGroups[newMember].push(groupId);
 
@@ -238,8 +267,84 @@ contract Messaging is IMessaging, IErrors {
 
     /// @notice Retrieves all addresses that the caller has exchanged messages with
     /// @return Array of addresses that the caller has DM history with
-    function getDirectMessageContacts() external view returns (address[] memory) {
+    function getDirectMessageContacts()
+        external
+        view
+        returns (address[] memory)
+    {
         return userContacts[msg.sender];
+    }
+
+    /// @notice Get all active groups and their requirements
+    /// @return activeGroups Array of group info including ID, name, and criteria
+    function getAllGroups()
+        external
+        view
+        returns (Group[] memory activeGroups)
+    {
+        activeGroups = new Group[](allGroupIds.length);
+
+        for (uint256 i = 0; i < allGroupIds.length; i++) {
+            activeGroups[i] = groups[allGroupIds[i]];
+        }
+
+        return activeGroups;
+    }
+
+    /// @notice Get all pending memberships across all groups
+    /// @return Array of PendingMembership structs
+    function getAllPendingMemberships()
+        external
+        view
+        returns (PendingMembership[] memory)
+    {
+        // First, count total pending memberships
+        uint256 totalPending = 0;
+        for (uint256 i = 0; i < allGroupIds.length; i++) {
+            totalPending += pendingMembers[allGroupIds[i]].length;
+        }
+
+        // Initialize array with the total size
+        PendingMembership[] memory allPending = new PendingMembership[](
+            totalPending
+        );
+
+        // Fill array with data
+        uint256 currentIndex = 0;
+        for (uint256 i = 0; i < allGroupIds.length; i++) {
+            uint256 groupId = allGroupIds[i];
+            address[] memory pending = pendingMembers[groupId];
+
+            for (uint256 j = 0; j < pending.length; j++) {
+                allPending[currentIndex] = PendingMembership({
+                    groupId: groupId,
+                    member: pending[j]
+                });
+                currentIndex++;
+            }
+        }
+
+        return allPending;
+    }
+
+    /// @notice Get all pending members for a group
+    /// @param groupId The ID of the group
+    /// @return Array of pending member addresses
+    function getPendingMembers(
+        uint256 groupId
+    ) external view returns (address[] memory) {
+        return pendingMembers[groupId];
+    }
+
+    /// @notice Checks if a user is pending for a group
+    /// @param groupId The ID of the group
+    /// @param user The address of the user
+    /// @return bool True if the user is pending for the group, false otherwise
+    function isPendingMember(
+        uint256 groupId,
+        address user
+    ) external view returns (bool) {
+        return isPending[groupId][user];
     }
 
     /// @notice Checks if a user is a member of a specific group
@@ -269,5 +374,21 @@ contract Messaging is IMessaging, IErrors {
         address addr2
     ) private pure returns (address, address) {
         return addr1 < addr2 ? (addr1, addr2) : (addr2, addr1);
+    }
+
+    /// @notice Internal function to remove a pending member
+    function _removePendingMember(uint256 groupId, address member) private {
+        // Remove from pending mapping
+        isPending[groupId][member] = false;
+
+        // Remove from pending array
+        address[] storage pending = pendingMembers[groupId];
+        for (uint i = 0; i < pending.length; i++) {
+            if (pending[i] == member) {
+                pending[i] = pending[pending.length - 1];
+                pending.pop();
+                break;
+            }
+        }
     }
 }
