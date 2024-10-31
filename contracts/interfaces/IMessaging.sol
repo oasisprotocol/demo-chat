@@ -8,9 +8,19 @@ interface IMessaging {
         uint256 timestamp;
     }
 
+    /// @notice Struct to define access criteria for a group
+    struct GroupCriteria {
+        uint256 chainId;
+        address tokenAddress;
+        uint256 requiredAmount;
+    }
+
+    /// @notice Stores group information
+    /// @dev Maps groupId => Group struct
     struct Group {
         string name;
         address[] members;
+        GroupCriteria criteria;
         bool exists;
     }
 
@@ -42,14 +52,18 @@ interface IMessaging {
     /// @dev Emits DirectMessageSent event
     function sendDirectMessage(address to, string calldata content) external;
 
-    /// @notice Creates a new group with initial members
+    /// @notice Creates a new group with access criteria
     /// @param name The name of the group
-    /// @param initialMembers Array of addresses to be added as initial members
+    /// @param chainId The chain ID of the token
+    /// @param tokenAddress The address of the token
+    /// @param requiredAmount The required amount of the token
     /// @return groupId The ID of the newly created group
     /// @dev Creator is automatically added as first member
     function createGroup(
         string calldata name,
-        address[] calldata initialMembers
+        uint256 chainId,
+        address tokenAddress,
+        uint256 requiredAmount
     ) external returns (uint256);
 
     /// @notice Sends a message to a group

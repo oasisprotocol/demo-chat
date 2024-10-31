@@ -6,7 +6,11 @@ import "./interfaces/IErrors.sol";
 import {Subcall} from "@oasisprotocol/sapphire-contracts/contracts/Subcall.sol";
 
 contract Messaging is IMessaging, IErrors {
+    /// @notice The ROFL app ID
     bytes21 public roflAppID;
+
+    /// @notice Counter for generating unique group IDs
+    uint256 private nextGroupId = 1;
 
     /// @notice Stores direct messages between two users
     /// @dev Maps sender => receiver => array of messages
@@ -24,8 +28,13 @@ contract Messaging is IMessaging, IErrors {
     /// @dev Maps user address => array of groupIds
     mapping(address => uint256[]) private userGroups;
 
-    /// @notice Counter for generating unique group IDs
-    uint256 private nextGroupId = 1;
+    /// @notice Stores addresses that the caller has exchanged messages with
+    /// @dev Maps user address => array of addresses
+    mapping(address => address[]) private userContacts;
+
+    /// @notice Tracks whether a user has exchanged messages with another user
+    /// @dev Maps user address => mapping of addresses => bool
+    mapping(address => mapping(address => bool)) private isContact;
 
     constructor(bytes21 _roflAppID) {
         roflAppID = _roflAppID;
@@ -48,31 +57,50 @@ contract Messaging is IMessaging, IErrors {
         (address addr1, address addr2) = _getMessageKey(msg.sender, to);
         directMessages[addr1][addr2].push(newMessage);
 
+        // Add contact tracking
+        if (!isContact[msg.sender][to]) {
+            userContacts[msg.sender].push(to);
+            isContact[msg.sender][to] = true;
+        }
+        if (!isContact[to][msg.sender]) {
+            userContacts[to].push(msg.sender);
+            isContact[to][msg.sender] = true;
+        }
+
         emit DirectMessageSent(msg.sender, to, content);
     }
 
-    /// @notice Creates a new group with initial members
+    /// @notice Creates a new group with access criteria
     /// @param name The name of the group
-    /// @param initialMembers Array of addresses to be added as initial members
+    /// @param chainId The chain ID where token balance will be checked
+    /// @param tokenAddress The address of the token contract
+    /// @param requiredAmount The minimum amount of tokens required
     /// @return groupId The ID of the newly created group
-    /// @dev Creator is automatically added as first member
     function createGroup(
         string calldata name,
-        address[] calldata initialMembers
+        uint256 chainId,
+        address tokenAddress,
+        uint256 requiredAmount
     ) external returns (uint256) {
         if (bytes(name).length == 0) revert EmptyGroupName();
+        if (tokenAddress == address(0)) revert InvalidTokenAddress();
+        if (requiredAmount == 0) revert InvalidRequiredAmount();
 
-        address[] memory members = new address[](initialMembers.length + 1);
+        address[] memory members = new address[](1);
         members[0] = msg.sender;
         userGroups[msg.sender].push(nextGroupId);
 
-        for (uint i = 0; i < initialMembers.length; i++) {
-            members[i + 1] = initialMembers[i];
-            userGroups[initialMembers[i]].push(nextGroupId);
-        }
-
         uint256 groupId = nextGroupId++;
-        groups[groupId] = Group({name: name, members: members, exists: true});
+        groups[groupId] = Group({
+            name: name,
+            members: members,
+            criteria: GroupCriteria({
+                chainId: chainId,
+                tokenAddress: tokenAddress,
+                requiredAmount: requiredAmount
+            }),
+            exists: true
+        });
 
         emit GroupCreated(groupId, name, msg.sender);
         return groupId;
@@ -105,8 +133,11 @@ contract Messaging is IMessaging, IErrors {
     /// @param newMember The address of the new member
     /// @dev Only existing group members can add new members
     function addGroupMember(uint256 groupId, address newMember) external {
+        // Only the authorized ROFL app can submit.
+        Subcall.roflEnsureAuthorizedOrigin(roflAppID);
+
         if (!groups[groupId].exists) revert GroupDoesNotExist();
-        if (!isGroupMember(groupId, msg.sender)) revert OnlyMembersCanAdd();
+        // if (!isGroupMember(groupId, msg.sender)) revert OnlyMembersCanAdd();
         if (newMember == address(0)) revert InvalidMemberAddress();
         if (isGroupMember(groupId, newMember)) revert AlreadyGroupMember();
 
@@ -125,8 +156,11 @@ contract Messaging is IMessaging, IErrors {
         uint256 groupId,
         address memberToRemove
     ) external {
+        // Only the authorized ROFL app can submit.
+        Subcall.roflEnsureAuthorizedOrigin(roflAppID);
+
         if (!groups[groupId].exists) revert GroupDoesNotExist();
-        if (!isGroupMember(groupId, msg.sender)) revert NotGroupMember();
+        // if (!isGroupMember(groupId, msg.sender)) revert NotGroupMember();
         if (!isGroupMember(groupId, memberToRemove)) revert NotGroupMember();
         if (memberToRemove == msg.sender) revert CannotRemoveSelf();
 
@@ -204,38 +238,8 @@ contract Messaging is IMessaging, IErrors {
 
     /// @notice Retrieves all addresses that the caller has exchanged messages with
     /// @return Array of addresses that the caller has DM history with
-    function getDirectMessageContacts()
-        external
-        view
-        returns (address[] memory)
-    {
-        address[] memory contacts = new address[](0);
-        uint256 count = 0;
-
-        // First pass to count unique contacts
-        for (uint256 i = 0; i < contacts.length; i++) {
-            if (
-                directMessages[msg.sender][contacts[i]].length > 0 ||
-                directMessages[contacts[i]][msg.sender].length > 0
-            ) {
-                count++;
-            }
-        }
-
-        // Second pass to populate array
-        address[] memory result = new address[](count);
-        uint256 index = 0;
-        for (uint256 i = 0; i < contacts.length; i++) {
-            if (
-                directMessages[msg.sender][contacts[i]].length > 0 ||
-                directMessages[contacts[i]][msg.sender].length > 0
-            ) {
-                result[index] = contacts[i];
-                index++;
-            }
-        }
-
-        return result;
+    function getDirectMessageContacts() external view returns (address[] memory) {
+        return userContacts[msg.sender];
     }
 
     /// @notice Checks if a user is a member of a specific group

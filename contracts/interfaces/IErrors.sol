@@ -11,6 +11,9 @@ interface IErrors {
     /// @notice Thrown when attempting to create a group with an empty name
     error EmptyGroupName();
 
+    error InvalidTokenAddress();
+    error InvalidRequiredAmount();
+
     /// @notice Thrown when attempting to interact with a group that doesn't exist
     error GroupDoesNotExist();
 
@@ -24,7 +27,7 @@ interface IErrors {
     error AlreadyGroupMember();
 
     /// @notice Thrown when a non-member attempts to add new members to a group
-    error OnlyMembersCanAdd();
+    // error OnlyMembersCanAdd();
 
     /// @notice Thrown when a member attempts to remove themselves from a group
     error CannotRemoveSelf();
