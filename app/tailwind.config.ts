@@ -65,7 +65,39 @@ const config: Config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+		  keyframes: {
+			"accordion-down": {
+			  from: { height: "0" },
+			  to: { height: "var(--radix-accordion-content-height)" },
+			},
+			"accordion-up": {
+			  from: { height: "var(--radix-accordion-content-height)" },
+			  to: { height: "0" },
+			},
+			"rotate-360": {
+			  "0%": { transform: "rotate(0deg)" },
+			  "25%": { transform: "rotate(90deg)" },
+			  "50%": { transform: "rotate(180deg)" },
+			  "75%": { transform: "rotate(270deg)" },
+			  "100%": { transform: "rotate(360deg)" },
+			},
+			moveToTop: {
+			  "0%": { top: "50%", transform: "translate(-50%, -50%)" },
+			  "100%": { top: "15%", transform: "translate(-50%, 0)" },
+			},
+			fadeIn: {
+			  "0%": { opacity: "0" },
+			  "100%": { opacity: "1" },
+			},
+		  },
+		  animation: {
+			"accordion-down": "accordion-down 0.2s ease-out",
+			"accordion-up": "accordion-up 0.2s ease-out",
+			"rotate-360": "rotate-360 1s steps(4) 1",
+			"move-to-top": "moveToTop 1.5s ease-in-out forwards",
+			"fade-in-delayed": "fadeIn 0.5s ease-out forwards 1.5s",
+		  },
   	}
   },
   plugins: [require("tailwindcss-animate")],

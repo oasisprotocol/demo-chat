@@ -2,7 +2,6 @@ import { NextPage } from "next"
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -23,9 +22,7 @@ interface PageProps {
 }
 
 const Home: NextPage<PageProps> = async ({ params }) => {
-  if (!params.address) {
-    return null
-  }
+  const { address } = await params;
 
   return (
     <SidebarInset>
@@ -39,17 +36,7 @@ const Home: NextPage<PageProps> = async ({ params }) => {
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              {/* <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <BreadcrumbPage>{params.address}</BreadcrumbPage>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{params.address}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider> */}
-              <BreadcrumbPage>{params.address}</BreadcrumbPage>
+              <BreadcrumbPage>{address}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

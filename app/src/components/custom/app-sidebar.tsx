@@ -1,10 +1,10 @@
 "use client"
 
-import * as React from "react"
-import { MessageCircle, Origami, Users } from "lucide-react"
+import { LogOut, MessageCircle, Origami, Users } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -14,6 +14,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useState, useMemo } from "react"
+import { useDisconnect } from "wagmi"
 
 // This is sample data - replace with actual data from the contract
 const data = {
@@ -63,19 +65,20 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0])
-  const [searchTerm, setSearchTerm] = React.useState("")
+  const [activeItem, setActiveItem] = useState(data.navMain[0])
+  const [searchTerm, setSearchTerm] = useState("")
   const { setOpen } = useSidebar()
+  const { disconnect } = useDisconnect()
 
   // Filter function for contacts and groups
-  const filteredContacts = React.useMemo(() => {
+  const filteredContacts = useMemo(() => {
     return data.contacts.filter((contact) =>
       contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.address.toLowerCase().includes(searchTerm.toLowerCase())
     )
   }, [searchTerm])
 
-  const filteredGroups = React.useMemo(() => {
+  const filteredGroups = useMemo(() => {
     return data.groups.filter((group) =>
       group.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -95,9 +98,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" className="md:h-8 md:p-0">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Origami className="size-4" />
-                </div>
+                <a href="/">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                    <Origami className="size-4" />
+                  </div>
+                </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -129,6 +134,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+        <SidebarFooter className="flex justify-center items-center">
+          <SidebarMenuButton
+            tooltip={{
+              children: "Disconnect",
+              hidden: false,
+            }}
+            onClick={() => disconnect()}
+            className="px-2.5 md:px-2"
+          >
+            <LogOut className="size-4 text-destructive cursor-pointer" />
+          </SidebarMenuButton>
+        </SidebarFooter>
       </Sidebar>
 
       <Sidebar collapsible="none" className="hidden flex-1 md:flex">

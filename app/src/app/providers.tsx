@@ -5,8 +5,7 @@ import { FC, ReactNode } from "react"
 import { WagmiProvider } from "wagmi"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { config } from "@/lib/wagmi"
-import { AppSidebar } from "@/components/custom/app-sidebar"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import Connect from "@/components/custom/connect"
 
 const queryClient = new QueryClient()
 
@@ -17,16 +16,9 @@ const Providers: FC<{
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
-          <SidebarProvider
-            style={
-              {
-                "--sidebar-width": "350px",
-              } as React.CSSProperties
-            }
-          >
-            <AppSidebar />
+          <Connect>
             {children}
-          </SidebarProvider>
+          </Connect>
         </QueryClientProvider>
       </WagmiProvider>
     </ThemeProvider>
