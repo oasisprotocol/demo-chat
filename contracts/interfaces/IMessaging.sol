@@ -115,24 +115,18 @@ interface IMessaging {
     ) external;
 
     /// @notice Adds a new member to an existing group
-    /// @param auth The SignIn struct containing user address, timestamp, and signature
     /// @param groupId The ID of the group
     /// @param newMember The address of the new member
     /// @dev Only existing group members can add new members
     function addGroupMember(
-        SignIn calldata auth,
         uint256 groupId,
         address newMember
     ) external;
 
     /// @notice Removes a member from an existing group
-    /// @param auth The SignIn struct containing user address, timestamp, and signature
     /// @param groupId The ID of the group
     /// @param memberToRemove The address of the member to remove
-    /// @dev Only existing group members can remove other members
-    /// @dev A member cannot remove themselves
     function removeGroupMember(
-        SignIn calldata auth,
         uint256 groupId,
         address memberToRemove
     ) external;

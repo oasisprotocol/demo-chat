@@ -220,17 +220,15 @@ contract Messaging is IMessaging, IErrors {
     }
 
     /// @notice Adds a new member to an existing group
-    /// @param auth The SignIn struct containing user address, timestamp, and signature
     /// @param groupId The ID of the group
     /// @param newMember The address of the new member
     /// @dev Only existing group members can add new members
     /// @dev Only the authorized ROFL app can submit
     /// @dev Emits MemberAdded event
     function addGroupMember(
-        SignIn calldata auth,
         uint256 groupId,
         address newMember
-    ) external authenticated(auth) {
+    ) external {
         // Only the authorized ROFL app can submit.
         Subcall.roflEnsureAuthorizedOrigin(roflAppID);
 
@@ -238,7 +236,6 @@ contract Messaging is IMessaging, IErrors {
         if (newMember == address(0)) revert InvalidMemberAddress();
         if (isGroupMember(groupId, newMember)) revert AlreadyGroupMember();
         if (!isPending[groupId][newMember]) revert NotPendingMember();
-        if (!isGroupMember(groupId, auth.user)) revert NotGroupMember();
 
         // Remove from pending list
         _removePendingMember(groupId, newMember);
@@ -247,11 +244,10 @@ contract Messaging is IMessaging, IErrors {
         groups[groupId].members.push(newMember);
         userGroups[newMember].push(groupId);
 
-        emit MemberAdded(groupId, newMember, auth.user);
+        emit MemberAdded(groupId, newMember, msg.sender);
     }
 
     /// @notice Removes a member from an existing group
-    /// @param auth The SignIn struct containing user address, timestamp, and signature
     /// @param groupId The ID of the group
     /// @param memberToRemove The address of the member to remove
     /// @dev Only existing group members can remove other members
@@ -259,17 +255,14 @@ contract Messaging is IMessaging, IErrors {
     /// @dev A member cannot remove themselves
     /// @dev Emits MemberRemoved event
     function removeGroupMember(
-        SignIn calldata auth,
         uint256 groupId,
         address memberToRemove
-    ) external authenticated(auth) {
+    ) external {
         // Only the authorized ROFL app can submit.
         Subcall.roflEnsureAuthorizedOrigin(roflAppID);
 
         if (!groups[groupId].exists) revert GroupDoesNotExist();
-        if (!isGroupMember(groupId, auth.user)) revert NotGroupMember();
         if (!isGroupMember(groupId, memberToRemove)) revert NotGroupMember();
-        if (memberToRemove == auth.user) revert CannotRemoveSelf();
 
         // Remove from members array
         address[] storage members = groups[groupId].members;
@@ -293,7 +286,7 @@ contract Messaging is IMessaging, IErrors {
             }
         }
 
-        emit MemberRemoved(groupId, memberToRemove, auth.user);
+        emit MemberRemoved(groupId, memberToRemove, msg.sender);
     }
 
     /// @notice Retrieves direct messages between caller and another user
