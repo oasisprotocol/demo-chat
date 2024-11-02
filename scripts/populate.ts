@@ -34,18 +34,18 @@ task("populate", "Populates the Messaging contract with test groups")
         console.log(`Created group: ${group.name}`);
       }
 
-      const [, otherAccount] = await ethers.getSigners();
-      const messagingAsOther = await ethers.getContractAt(
-        "Messaging",
-        args.contract,
-        otherAccount
-      );
+      // const [, otherAccount] = await ethers.getSigners();
+      // const messagingAsOther = await ethers.getContractAt(
+      //   "Messaging",
+      //   args.contract,
+      //   otherAccount
+      // );
 
-      const tx = await messagingAsOther.requestToJoinGroup(1);
-      await tx.wait();
-      console.log(`Account ${otherAccount.address} requested to join group 1`);
+      // const tx = await messagingAsOther.requestToJoinGroup(1);
+      // await tx.wait();
+      // console.log(`Account ${otherAccount.address} requested to join group 1`);
 
-      console.log("Successfully populated groups and requested membership!");
+      // console.log("Successfully populated groups and requested membership!");
 
     } catch (error) {
       console.error("Error populating groups:", error);

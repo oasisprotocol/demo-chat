@@ -1,6 +1,6 @@
 "use client"
 
-import { LogOut, MessageCircle, Origami, Users } from "lucide-react"
+import { LogOut, MessageCircle, Origami, Users, Plus } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -14,13 +14,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useState, useMemo } from "react"
-import { useDisconnect } from "wagmi"
+import { useState, useMemo, useEffect } from "react"
+import { useAccount, useDisconnect } from "wagmi"
 import { useSetAtom, useAtomValue } from "jotai"
 import { selectionAtom } from "@/lib/store"
 import { cn } from "@/lib/utils"
+import { useGetAllGroups } from "@/hooks/use-get-all-groups"
+import { useGetDirectMessageContacts } from "@/hooks/use-get-direct-message-contacts"
 
-// This is sample data - replace with actual data from the contract
 const data = {
   navMain: [
     {
@@ -34,53 +35,43 @@ const data = {
       isActive: false,
     },
   ],
-  contacts: [
-    {
-      name: "Alice Smith",
-      address: "0x1234...5678",
-      avatar: "/avatars/alice.jpg",
-    },
-    {
-      name: "Bob Johnson",
-      address: "0x8765...4321",
-      avatar: "/avatars/bob.jpg",
-    },
-  ],
-  groups: [
-    {
-      id: 1,
-      name: "NFT Holders",
-      members: ["0x1234...5678", "0x8765...4321"],
-    },
-    {
-      id: 2,
-      name: "DAO Members",
-      members: ["0x1234...5678", "0x8765...4321"],
-    },
-  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeItem, setActiveItem] = useState(data.navMain[0])
   const [searchTerm, setSearchTerm] = useState("")
+  const [auth, setAuth] = useState<SignIn | undefined>()
+  const { address } = useAccount()
+
+  useEffect(() => {
+    const lastSignInData = localStorage.getItem(`lastSignIn_${address}`)
+    if (lastSignInData) {
+      setAuth(JSON.parse(lastSignInData))
+    }
+  }, [address])
+
   const { setOpen } = useSidebar()
   const { disconnect } = useDisconnect()
 
   const setSelection = useSetAtom(selectionAtom)
   const selection = useAtomValue(selectionAtom)
 
+  const { data: groups, isLoading: isLoadingGroups } = useGetAllGroups({ auth })
+  const { data: contacts, isLoading: isLoadingContacts } = useGetDirectMessageContacts({ auth })
+
   const filteredContacts = useMemo(() => {
-    return data.contacts.filter((contact) =>
-      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.address.toLowerCase().includes(searchTerm.toLowerCase())
+    if (!contacts) return []
+    return contacts.filter((contact) =>
+      contact.toLowerCase().includes(searchTerm.toLowerCase())
     )
-  }, [searchTerm])
+  }, [searchTerm, contacts])
 
   const filteredGroups = useMemo(() => {
-    return data.groups.filter((group) =>
+    if (!groups) return []
+    return groups.filter((group) =>
       group.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
-  }, [searchTerm])
+  }, [searchTerm, groups])
 
   return (
     <Sidebar
@@ -161,45 +152,83 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroup>
             {activeItem.title === "Direct Messages" ? (
               <SidebarGroupContent>
-                {filteredContacts.map((contact) => (
-                  <div
-                    onClick={() => setSelection({ view: 'chat', id: contact.address })}
-                    key={contact.address}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer",
-                      selection.view === 'chat' && selection.id === contact.address && "bg-sidebar-accent text-sidebar-accent-foreground"
-                    )}
-                  >
-                    <div className="size-8 rounded-full bg-muted" />
-                    <div className="grid">
-                      <span className="font-medium">{contact.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {contact.address}
-                      </span>
-                    </div>
+                {isLoadingContacts ? (
+                  <div className="p-4 text-center text-muted-foreground">
+                    Loading contacts...
                   </div>
-                ))}
+                ) : filteredContacts.length > 0 ? (
+                  filteredContacts.map((address) => (
+                    <div
+                      onClick={() => setSelection({ view: 'chat', id: address })}
+                      key={address}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer",
+                        selection.view === 'chat' && selection.id === address && "bg-sidebar-accent text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <div className="size-8 rounded-full bg-muted" />
+                      <div className="grid">
+                        <span className="font-medium">{address}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {address}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4">
+                    <div className="text-center text-muted-foreground mb-2">
+                      No contacts found
+                    </div>
+                    <button
+                      onClick={() => setSelection({ view: 'chat', id: searchTerm })}
+                      className="flex items-center gap-2 w-full justify-center rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer"
+                    >
+                      <Plus className="size-4" />
+                      <span>Start new chat with {searchTerm}</span>
+                    </button>
+                  </div>
+                )}
               </SidebarGroupContent>
             ) : (
               <SidebarGroupContent>
-                {filteredGroups.map((group) => (
-                  <div
-                    onClick={() => setSelection({ view: 'group', id: group.id.toString() })}
-                    key={group.id}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer",
-                      selection.view === 'group' && selection.id === group.id.toString() && "bg-sidebar-accent text-sidebar-accent-foreground"
-                    )}
-                  >
-                    <div className="size-8 rounded-full bg-muted" />
-                    <div className="grid">
-                      <span className="font-medium">{group.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {group.members.length} members
-                      </span>
-                    </div>
+                {isLoadingGroups ? (
+                  <div className="p-4 text-center text-muted-foreground">
+                    Loading groups...
                   </div>
-                ))}
+                ) : filteredGroups.length > 0 ? (
+                  filteredGroups.map((group) => (
+                    <div
+                      onClick={() => setSelection({ view: 'group', id: group.groupId.toString() })}
+                      key={group.groupId}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer",
+                        selection.view === 'group' && selection.id === group.groupId.toString() && "bg-sidebar-accent text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <div className="size-8 rounded-full bg-muted" />
+                      <div className="grid">
+                        <span className="font-medium">{group.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {group.members.length} members
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4">
+                    <div className="text-center text-muted-foreground mb-2">
+                      No groups found
+                    </div>
+                    <button
+                      // onClick={() => setSelection({ view: 'createGroup', id: searchTerm })}
+                      className="flex items-center gap-2 w-full justify-center rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer"
+                    >
+                      <Plus className="size-4" />
+                      <span>Create new group "{searchTerm}"</span>
+                    </button>
+                  </div>
+                )}
               </SidebarGroupContent>
             )}
           </SidebarGroup>

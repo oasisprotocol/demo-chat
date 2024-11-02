@@ -14,13 +14,42 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { FC } from "react"
+import { FC, useState, FormEvent, useEffect } from "react"
+import { useAccount } from "wagmi"
+import { useSendDirectMessage } from "@/hooks/use-send-direct-message"
+import { useGetDirectMessages } from "@/hooks/use-get-direct-messages"
+import ChatMessage from "../common/chat-message"
 
 interface PageProps {
   id: string
 }
 
 const Chat: FC<PageProps> = ({ id }) => {
+  const { address } = useAccount()
+  const [auth, setAuth] = useState<SignIn | undefined>()
+  const { data: messages } = useGetDirectMessages({ auth, otherUser: id as `0x${string}` })
+  const sendMessage = useSendDirectMessage()
+  const [messageContent, setMessageContent] = useState("")
+
+  useEffect(() => {
+    const lastSignInData = localStorage.getItem(`lastSignIn_${address}`)
+    if (lastSignInData) {
+      setAuth(JSON.parse(lastSignInData))
+    }
+  }, [address])
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    sendMessage.mutateAsync({
+      auth,
+      to: id as `0x${string}`,
+      content: messageContent,
+    })
+    setMessageContent("")
+  }
+
+  if (!address) return null
+
   return (
     <SidebarInset>
       <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
@@ -41,27 +70,25 @@ const Chat: FC<PageProps> = ({ id }) => {
       <div className="flex flex-1 flex-col">
         <ScrollArea className="flex-1 p-4">
           <div className="flex flex-col gap-4">
-            <div className="flex justify-start">
-              <div className="max-w-[80%] rounded-lg bg-muted p-3">
-                <p>Hello!</p>
-                <span className="text-xs opacity-70">12:34 PM</span>
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <div className="max-w-[80%] rounded-lg bg-primary p-3 text-primary-foreground">
-                <p>Hi there!</p>
-                <span className="text-xs opacity-70">12:35 PM</span>
-              </div>
-            </div>
+            {messages?.map((message, index) => (
+              <ChatMessage key={index} message={message} address={address} />
+            ))}
           </div>
         </ScrollArea>
         <div className="border-t bg-background p-4">
-          <form className="flex gap-2">
+          <form className="flex gap-2" onSubmit={handleSubmit}>
             <Input
               placeholder="Type a message..."
               className="flex-1"
+              value={messageContent}
+              onChange={(e) => setMessageContent(e.target.value)}
             />
-            <Button type="submit">Send</Button>
+            <Button
+              type="submit"
+              disabled={sendMessage.isPending || !messageContent.trim()}
+            >
+              {sendMessage.isPending ? "Sending..." : "Send"}
+            </Button>
           </form>
         </div>
       </div>

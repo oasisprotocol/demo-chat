@@ -2,6 +2,9 @@
 pragma solidity ^0.8.27;
 
 interface IErrors {
+    error SignInExpired();
+    error InvalidSignIn();
+
     /// @notice Thrown when attempting to send a message to an invalid address (zero address)
     error InvalidRecipient();
 

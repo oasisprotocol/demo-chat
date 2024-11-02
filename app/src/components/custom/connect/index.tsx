@@ -5,7 +5,9 @@ import { useAccount } from 'wagmi';
 import Onboarding from './onboarding';
 import Loading from './loading';
 import { useSetAtom } from 'jotai';
-import { selectionAtom, setSelection } from '@/lib/store';
+import { selectionAtom } from '@/lib/store';
+import { useCheckSignIn } from '@/hooks/auth/use-check-signin';
+import SignIn from './sign-in';
 
 interface Props {
   children: ReactNode
@@ -14,6 +16,7 @@ interface Props {
 const Connect: FC<Props> = ({ children }) => {
   const { address } = useAccount()
   const [isClient, setIsClient] = useState(false)
+  const { isSignedIn, auth } = useCheckSignIn(address)
 
   const setSelection = useSetAtom(selectionAtom)
 
@@ -32,6 +35,7 @@ const Connect: FC<Props> = ({ children }) => {
 
   if (!isClient) return <Loading />
   if (!address) return <Onboarding />
+  if (!isSignedIn || !auth) return <SignIn />
 
   return (
     <SidebarProvider

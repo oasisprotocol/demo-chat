@@ -1,5 +1,6 @@
 import "@nomicfoundation/hardhat-toolbox"
 import "@nomicfoundation/hardhat-ethers"
+import "@oasisprotocol/sapphire-hardhat"
 import "dotenv/config"
 import "hardhat-contract-sizer"
 import "./scripts/generate"
