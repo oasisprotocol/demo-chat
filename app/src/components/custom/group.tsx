@@ -1,4 +1,3 @@
-import { NextPage } from "next"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,16 +13,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { FC } from "react"
 
 interface PageProps {
-  params: {
-    address: string
-  }
+  id: string
 }
 
-const Home: NextPage<PageProps> = async ({ params }) => {
-  const { address } = await params;
-
+const Group: FC<PageProps> = ({ id }) => {
   return (
     <SidebarInset>
       <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
@@ -32,11 +28,11 @@ const Home: NextPage<PageProps> = async ({ params }) => {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbPage className="opacity-60">Direct Message</BreadcrumbPage>
+              <BreadcrumbPage className="opacity-60">Group</BreadcrumbPage>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>{address}</BreadcrumbPage>
+              <BreadcrumbPage>{id}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -72,5 +68,5 @@ const Home: NextPage<PageProps> = async ({ params }) => {
   )
 }
 
-export default Home
+export default Group
 

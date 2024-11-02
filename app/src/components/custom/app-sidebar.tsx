@@ -16,24 +16,20 @@ import {
 } from "@/components/ui/sidebar"
 import { useState, useMemo } from "react"
 import { useDisconnect } from "wagmi"
+import { useSetAtom, useAtomValue } from "jotai"
+import { selectionAtom } from "@/lib/store"
+import { cn } from "@/lib/utils"
 
 // This is sample data - replace with actual data from the contract
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Direct Messages",
-      url: "#",
       icon: MessageCircle,
       isActive: true,
     },
     {
       title: "Groups",
-      url: "#",
       icon: Users,
       isActive: false,
     },
@@ -70,7 +66,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { setOpen } = useSidebar()
   const { disconnect } = useDisconnect()
 
-  // Filter function for contacts and groups
+  const setSelection = useSetAtom(selectionAtom)
+  const selection = useAtomValue(selectionAtom)
+
   const filteredContacts = useMemo(() => {
     return data.contacts.filter((contact) =>
       contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -98,11 +96,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" className="md:h-8 md:p-0">
-                <a href="/">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Origami className="size-4" />
-                  </div>
-                </a>
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <Origami className="size-4" />
+                </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -166,10 +162,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {activeItem.title === "Direct Messages" ? (
               <SidebarGroupContent>
                 {filteredContacts.map((contact) => (
-                  <a
-                    href={`/dm/${contact.address}`}
+                  <div
+                    onClick={() => setSelection({ view: 'chat', id: contact.address })}
                     key={contact.address}
-                    className="flex items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer",
+                      selection.view === 'chat' && selection.id === contact.address && "bg-sidebar-accent text-sidebar-accent-foreground"
+                    )}
                   >
                     <div className="size-8 rounded-full bg-muted" />
                     <div className="grid">
@@ -178,16 +177,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         {contact.address}
                       </span>
                     </div>
-                  </a>
+                  </div>
                 ))}
               </SidebarGroupContent>
             ) : (
               <SidebarGroupContent>
                 {filteredGroups.map((group) => (
-                  <a
-                    href={`/group/${group.id}`}
+                  <div
+                    onClick={() => setSelection({ view: 'group', id: group.id.toString() })}
                     key={group.id}
-                    className="flex items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer",
+                      selection.view === 'group' && selection.id === group.id.toString() && "bg-sidebar-accent text-sidebar-accent-foreground"
+                    )}
                   >
                     <div className="size-8 rounded-full bg-muted" />
                     <div className="grid">
@@ -196,7 +198,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         {group.members.length} members
                       </span>
                     </div>
-                  </a>
+                  </div>
                 ))}
               </SidebarGroupContent>
             )}
