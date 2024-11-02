@@ -4,7 +4,7 @@ import { MESSAGING_CONTRACT } from "@/lib/contracts"
 import { config } from "@/lib/wagmi"
 import { useQuery } from "@tanstack/react-query"
 
-export function useGetAllGroups({ auth }: { auth: SignIn | undefined }) {
+export function useGetAllGroups() {
   const chainId = useChainId()
 
   return useQuery<Group[]>({
@@ -16,13 +16,12 @@ export function useGetAllGroups({ auth }: { auth: SignIn | undefined }) {
         address: contract.address,
         abi: contract.abi,
         functionName: "getAllGroups",
-        args: [auth],
+        args: [],
       })
 
       if (!result) throw new Error("Failed to fetch groups")
       return result as Group[]
     },
-    enabled: !!auth,
     refetchInterval: 1000,
     refetchIntervalInBackground: true,
   })

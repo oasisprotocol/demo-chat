@@ -18,20 +18,23 @@ import { useGetGroupMessages } from "@/hooks/use-get-group-messages"
 import { useSendGroupMessage } from "@/hooks/use-send-group-message"
 import { useAccount } from "wagmi"
 import ChatMessage from "../common/chat-message"
+import { useCheckSignIn } from "@/hooks/auth/use-check-signin"
 
 interface PageProps {
   id: string
 }
 
 const Group: FC<PageProps> = ({ id }) => {
-  const { data: messages } = useGetGroupMessages(Number(id))
   const { address } = useAccount()
+  const { auth } = useCheckSignIn(address as `0x${string}`)
+  const { data: messages } = useGetGroupMessages(auth, Number(id))
   const sendMessage = useSendGroupMessage()
   const [messageContent, setMessageContent] = useState("")
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     sendMessage.mutateAsync({
+      auth,
       groupId: Number(id),
       content: messageContent,
     })

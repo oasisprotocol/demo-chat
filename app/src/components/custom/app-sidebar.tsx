@@ -56,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const setSelection = useSetAtom(selectionAtom)
   const selection = useAtomValue(selectionAtom)
 
-  const { data: groups, isLoading: isLoadingGroups } = useGetAllGroups({ auth })
+  const { data: groups, isLoading: isLoadingGroups } = useGetAllGroups()
   const { data: contacts, isLoading: isLoadingContacts } = useGetDirectMessageContacts({ auth })
 
   const filteredContacts = useMemo(() => {

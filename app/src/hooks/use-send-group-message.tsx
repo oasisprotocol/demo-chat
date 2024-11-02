@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query"
 import { MESSAGING_CONTRACT } from "@/lib/contracts"
 
 interface SendGroupMessageParams {
+  auth: SignIn | undefined
   groupId: number
   content: string
 }
@@ -15,12 +16,12 @@ export function useSendGroupMessage() {
   const contract = MESSAGING_CONTRACT[chainId]
 
   const sendMutation = useMutation({
-    mutationFn: async ({ groupId, content }: SendGroupMessageParams) => {
+    mutationFn: async ({ auth, groupId, content }: SendGroupMessageParams) => {
       const result = await writeContract(config, {
         address: contract.address,
         abi: contract.abi,
         functionName: "sendGroupMessage",
-        args: [groupId, content],
+        args: [auth, groupId, content],
       })
 
       if (!result) throw new Error("Failed to send message")

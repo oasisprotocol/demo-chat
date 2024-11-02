@@ -4,7 +4,7 @@ import { MESSAGING_CONTRACT } from "@/lib/contracts"
 import { config } from "@/lib/wagmi"
 import { useQuery } from "@tanstack/react-query"
 
-export function useGetGroupMessages(groupId: number) {
+export function useGetGroupMessages(auth: SignIn | undefined, groupId: number) {
   const chainId = useChainId()
 
   return useQuery<Message[]>({
@@ -16,12 +16,13 @@ export function useGetGroupMessages(groupId: number) {
         address: contract.address,
         abi: contract.abi,
         functionName: "getGroupMessages",
-        args: [groupId],
+        args: [auth, groupId],
       })
 
       if (!result) throw new Error("Failed to fetch group messages")
       return result as Message[]
     },
+    enabled: !!auth,
     refetchInterval: 1000,
     refetchIntervalInBackground: true,
   })

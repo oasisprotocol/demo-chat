@@ -1,11 +1,46 @@
 import { task } from "hardhat/config";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 task("populate", "Populates the Messaging contract with test groups")
   .addParam("contract", "Address of the deployed Messaging contract")
   .setAction(async (args, { ethers }) => {
     try {
+      const [signer] = await ethers.getSigners();
       const messaging = await ethers.getContractAt("Messaging", args.contract);
-      
+    
+      async function getSignInData(signer: HardhatEthersSigner) {
+        const time = Math.floor(Date.now() / 1000);
+        const network = await signer.provider.getNetwork();
+        const domain = {
+          name: "Messaging",
+          version: "1",
+          chainId: network.chainId,
+          verifyingContract: args.contract
+        };
+        
+        const types = {
+          SignIn: [
+            { name: "user", type: "address" },
+            { name: "time", type: "uint32" }
+          ]
+        };
+        
+        const value = {
+          user: signer.address,
+          time: time
+        };
+
+        const signature = await signer.signTypedData(domain, types, value);
+        const { r, s, v } = ethers.Signature.from(signature);
+
+        return {
+          user: value.user,
+          time: value.time,
+          rsv: { r, s, v }
+        };
+      }
+
       const groups = [
         {
           name: "USDC Holders",
@@ -24,7 +59,9 @@ task("populate", "Populates the Messaging contract with test groups")
       console.log("Creating test groups...");
 
       for (const group of groups) {
+        const signInData = await getSignInData(signer);
         const tx = await messaging.createGroup(
+          signInData,  // Add SignIn data
           group.name,
           group.chainId,
           group.tokenAddress,
