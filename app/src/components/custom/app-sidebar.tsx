@@ -15,7 +15,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useState, useMemo, useEffect } from "react"
-import { useAccount, useDisconnect } from "wagmi"
+import { useAccount, useDisconnect, useWriteContract } from "wagmi"
 import { useSetAtom, useAtomValue } from "jotai"
 import { selectionAtom } from "@/lib/store"
 import { cn } from "@/lib/utils"
@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/context-menu"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useCreateGroup } from "@/hooks/use-create-group"
 
 const data = {
   navMain: [
@@ -104,6 +105,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [selectedAddress, setSelectedAddress] = useState("")
   const [newName, setNewName] = useState("")
 
+  const [createGroupOpen, setCreateGroupOpen] = useState(false)
+  const [groupName, setGroupName] = useState("")
+  const [tokenAddress, setTokenAddress] = useState("")
+  const [requiredAmount, setRequiredAmount] = useState("")
+  const [chainId, setChainId] = useState("1")
+
+  const createGroup = useCreateGroup()
+
+  const handleCreateGroup = () => {
+    if (!auth) return
+
+    createGroup.mutate({
+      auth,
+      name: groupName,
+      chainId: parseInt(chainId),
+      tokenAddress: tokenAddress as `0x${string}`,
+      requiredAmount: requiredAmount
+    })
+
+    setCreateGroupOpen(false)
+    // Reset form
+    setGroupName("")
+    setTokenAddress("")
+    setRequiredAmount("")
+    setChainId("1")
+  }
+
   return (
     <Sidebar
       collapsible="icon"
@@ -158,7 +186,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               children: "Disconnect",
               hidden: false,
             }}
-            onClick={() => disconnect()}
+            onClick={() => {
+              if (address) {
+                localStorage.removeItem(`lastSignIn_${address}`)
+              }
+              disconnect()
+            }}
             className="px-2.5 md:px-2"
           >
             <LogOut className="size-4 text-destructive cursor-pointer" />
@@ -167,10 +200,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </Sidebar>
 
       <Sidebar collapsible="none" className="hidden flex-1 md:flex">
-        <SidebarHeader className="gap-3.5 border-b p-4">
-          <div className="flex w-full items-center justify-between">
+        <SidebarHeader className="border-b p-4">
+          <div className="flex w-full items-center justify-between h-12">
             <div className="text-base font-medium text-foreground">
               {activeItem.title}
+            </div>
+            <div className="min-w-20">
+              {activeItem.title === "Groups" && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="px-2"
+                  onClick={() => setCreateGroupOpen(true)}
+                >
+                  <Plus className="size-4" />
+                  Create Group
+                </Button>
+              )}
             </div>
           </div>
           <SidebarInput
@@ -185,7 +231,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarGroupContent>
                 {filteredContacts.length > 0 ? (
                   filteredContacts.map((address) => (
-                    <ContextMenu>
+                    <ContextMenu key={address}>
                       <ContextMenuTrigger>
                         <div
                           onClick={() => {
@@ -201,7 +247,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           <Jazzicon diameter={32} seed={parseInt(address.slice(2, 10), 16)} />
                           <div className="grid">
                             <span className="font-medium">{getStoredName(address)}</span>
-                            <span className="text-xs text-muted-foreground">{shortenAddress(address)}</span>
+                            {getStoredName(address) !== shortenAddress(address) && (
+                              <span className="text-xs text-muted-foreground">{shortenAddress(address)}</span>
+                            )}
                           </div>
                         </div>
                       </ContextMenuTrigger>
@@ -264,16 +312,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   ))
                 ) : (
                   <div className="p-4">
-                    <div className="text-center text-muted-foreground mb-2">
+                    <div className="text-center text-muted-foreground">
                       No groups found
                     </div>
-                    <button
-                      // onClick={() => setSelection({ view: 'createGroup', id: searchTerm })}
-                      className="flex items-center gap-2 w-full justify-center rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer"
-                    >
-                      <Plus className="size-4" />
-                      <span>Create new group "{searchTerm}"</span>
-                    </button>
                   </div>
                 )}
               </SidebarGroupContent>
@@ -291,12 +332,67 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Enter new name"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  localStorage.setItem(`name_${selectedAddress}`, newName)
+                  setDialogOpen(false)
+                }
+              }}
             />
             <Button onClick={() => {
               localStorage.setItem(`name_${selectedAddress}`, newName)
               setDialogOpen(false)
             }}>
               Save
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={createGroupOpen} onOpenChange={setCreateGroupOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Group</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Group Name</label>
+              <Input
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="Enter group name"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Chain ID</label>
+              <Input
+                type="number"
+                value={chainId}
+                onChange={(e) => setChainId(e.target.value)}
+                placeholder="Enter chain ID"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Token Address</label>
+              <Input
+                value={tokenAddress}
+                onChange={(e) => setTokenAddress(e.target.value)}
+                placeholder="Enter token address"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Required Amount</label>
+              <Input
+                type="number"
+                value={requiredAmount}
+                onChange={(e) => setRequiredAmount(e.target.value)}
+                placeholder="Enter required token amount"
+              />
+            </div>
+            <Button
+              onClick={handleCreateGroup}
+              disabled={!groupName || !tokenAddress || !requiredAmount || !chainId}
+            >
+              Create Group
             </Button>
           </div>
         </DialogContent>

@@ -19,6 +19,30 @@ import { useSendGroupMessage } from "@/hooks/use-send-group-message"
 import { useAccount } from "wagmi"
 import ChatMessage from "../common/chat-message"
 import { useCheckSignIn } from "@/hooks/auth/use-check-signin"
+import { useCheckGroupAccess } from "@/hooks/use-check-group-access"
+
+interface GroupAccessRequestProps {
+  groupId: string
+  isPending: boolean
+  onRequest: () => void
+}
+
+const GroupAccessRequest: FC<GroupAccessRequestProps> = ({ groupId, isPending, onRequest }) => {
+  return (
+    <SidebarInset>
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-4">
+        <h2 className="text-xl font-semibold">Access Required</h2>
+        <p className="text-center text-muted-foreground">
+          {isPending 
+            ? "Your access request is pending approval"
+            : "You need to be a member of this group to view messages"
+          }
+        </p>
+        {!isPending && <Button onClick={onRequest}>Request Access</Button>}
+      </div>
+    </SidebarInset>
+  )
+}
 
 interface PageProps {
   id: string
@@ -27,6 +51,11 @@ interface PageProps {
 const Group: FC<PageProps> = ({ id }) => {
   const { address } = useAccount()
   const { auth } = useCheckSignIn(address as `0x${string}`)
+  const { isMember, isPending, isLoading, requestAccess } = useCheckGroupAccess({
+    auth,
+    groupId: id,
+    address: address as `0x${string}`,
+  })
   const { data: messages } = useGetGroupMessages(auth, Number(id))
   const sendMessage = useSendGroupMessage()
   const [messageContent, setMessageContent] = useState("")
@@ -42,6 +71,17 @@ const Group: FC<PageProps> = ({ id }) => {
   }
 
   if (!address) return null
+  if (isLoading) return <div>Loading...</div>
+  
+  if (!isMember) {
+    return (
+      <GroupAccessRequest 
+        groupId={id}
+        isPending={isPending || false}
+        onRequest={() => requestAccess.mutate()} 
+      />
+    )
+  }
 
   return (
     <SidebarInset>
