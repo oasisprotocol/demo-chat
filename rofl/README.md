@@ -15,7 +15,7 @@ oasis rofl build sgx --mode unsafe
 Docker image using the binary built above for the localnet node.
 
 ```sh
-docker run -it -p8545:8545 -p8546:8546 -v ./:/rofls ghcr.io/oasisprotocol/sapphire-localnet
+docker run -it -p8545:8545 -p8546:8546 -p8080:80 -p8547:8547 -p8544:8544 -v ./:/rofls ghcr.io/oasisprotocol/sapphire-localnet
 ```
 
 ## On-chain
