@@ -6,20 +6,21 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { FC } from "react"
 
-interface RenameDialogProps {
+interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   addressToRename: string
   initialName: string
 }
 
-export function RenameDialog({
+const RenameDialog: FC<Props> = ({
   open,
   onOpenChange,
   addressToRename,
   initialName,
-}: RenameDialogProps) {
+}) => {
   const save = (value: string) => {
     localStorage.setItem(`name_${addressToRename}`, value)
     onOpenChange(false)
@@ -46,4 +47,6 @@ export function RenameDialog({
       </DialogContent>
     </Dialog>
   )
-} 
+}
+
+export default RenameDialog

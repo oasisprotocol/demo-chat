@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import DirectMessages from "./direct-messages"
-import { Groups } from "./groups"
+import Groups from "./groups"
 import { selectionAtom } from "@/lib/store"
-import { CreateGroupDialog } from "../../../common/create-group-dialog"
+import CreateGroupDialog from "../../../common/create-group-dialog"
 
 const ContentSidebar: FC = () => {
   const [searchTerm, setSearchTerm] = useState("")

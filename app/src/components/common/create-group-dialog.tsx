@@ -6,19 +6,16 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { FC, useState } from "react"
 import { useCreateGroup } from "@/hooks/use-create-group"
 import { useCheckSignIn } from "@/hooks/auth/use-check-signin"
 
-interface CreateGroupDialogProps {
+interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function CreateGroupDialog({
-  open,
-  onOpenChange,
-}: CreateGroupDialogProps) {
+const CreateGroupDialog: FC<Props> = ({ open, onOpenChange }) => {
   const [groupName, setGroupName] = useState("")
   const [tokenAddress, setTokenAddress] = useState("")
   const [requiredAmount, setRequiredAmount] = useState("")
@@ -98,4 +95,6 @@ export function CreateGroupDialog({
       </DialogContent>
     </Dialog>
   )
-} 
+}
+
+export default CreateGroupDialog

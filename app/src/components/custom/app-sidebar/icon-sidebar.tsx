@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 import { NAV_ITEMS } from "@/lib/constants"
 import { useAccount } from "wagmi"
-import { useAtom, useSetAtom, useAtomValue } from "jotai"
+import { useSetAtom, useAtomValue } from "jotai"
 import { FC } from "react"
 import { selectionAtom } from "@/lib/store"
 

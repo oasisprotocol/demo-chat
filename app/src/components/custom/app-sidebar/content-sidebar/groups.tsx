@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, FC } from 'react'
 import { SidebarGroupContent } from "@/components/ui/sidebar"
 import Jazzicon from 'react-jazzicon'
 import { cn } from "@/lib/utils"
@@ -10,7 +10,7 @@ interface GroupsProps {
   searchTerm: string
 }
 
-export function Groups({ searchTerm }: GroupsProps) {
+const Groups: FC<GroupsProps> = ({ searchTerm }) => {
   const { data: groups = [] } = useGetAllGroups()
 
   const setSelection = useSetAtom(selectionAtom)
@@ -23,7 +23,6 @@ export function Groups({ searchTerm }: GroupsProps) {
   }, [searchTerm, groups])
 
   return (
-
     <SidebarGroupContent>
       {filteredGroups.length > 0 ? (
         filteredGroups.map((group) => (
@@ -53,3 +52,4 @@ export function Groups({ searchTerm }: GroupsProps) {
   )
 }
 
+export default Groups

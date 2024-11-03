@@ -8,7 +8,7 @@ import { FC, useState, useMemo } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { ViewState, selectionAtom } from "@/lib/store"
 import { useGetDirectMessageContacts } from "@/hooks/use-get-direct-message-contacts"
-import { RenameDialog } from "@/components/common/rename-dialog"
+import RenameDialog from "@/components/common/rename-dialog"
 import { useCheckSignIn } from "@/hooks/auth/use-check-signin"
 
 interface DirectMessagesProps {
