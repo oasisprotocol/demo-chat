@@ -1,10 +1,10 @@
 import { FC, ReactNode, useEffect, useState } from 'react';
 import { SidebarProvider } from '../../ui/sidebar';
-import { AppSidebar } from '../app-sidebar';
+import AppSidebar from '../app-sidebar';
 import { useAccount } from 'wagmi';
 import Onboarding from './onboarding';
 import Loading from './loading';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { selectionAtom } from '@/lib/store';
 import { useCheckSignIn } from '@/hooks/auth/use-check-signin';
 import SignIn from './sign-in';
@@ -16,16 +16,18 @@ interface Props {
 const Connect: FC<Props> = ({ children }) => {
   const { address } = useAccount()
   const [isClient, setIsClient] = useState(false)
-  const { isSignedIn, auth } = useCheckSignIn(address)
+  const { isSignedIn, auth } = useCheckSignIn()
 
   const setSelection = useSetAtom(selectionAtom)
+  const selection = useAtomValue(selectionAtom)
 
   useEffect(() => setIsClient(true), [])
 
+  // TODO: Defaults to chat view instead of current view
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = (e: KeyboardEvent) => {      
       if (e.key === 'Escape') {
-        setSelection({ view: null, id: null })
+        setSelection({ view: selection.view, id: null })
       }
     }
 

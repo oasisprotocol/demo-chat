@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react"
-import { Hex } from "viem"
+import { useAccount } from "wagmi"
 
-export function useCheckSignIn(address: Hex | undefined) {
+export function useCheckSignIn() {
+  const { address } = useAccount()
+
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [auth, setAuth] = useState<SignIn>()
 

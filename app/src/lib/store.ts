@@ -3,7 +3,7 @@ import { atom } from 'jotai'
 export const isLoadingAtom = atom<boolean>(false)
 export const errorAtom = atom<string | null>(null)
 
-export type ViewState = 'chat' | 'group' | null
+export type ViewState = 'dm' | 'group' | null
 
 export const currentViewAtom = atom<ViewState>(null)
 
@@ -13,13 +13,13 @@ export type Selection = {
 }
 
 export const selectionAtom = atom<Selection>({
-  view: null,
+  view: 'dm',
   id: null
 })
 
 export const setSelection = (view: ViewState, id: string | null = null): Selection => {
   return {
     view,
-    id: view === null ? null : id
+    id
   }
 }

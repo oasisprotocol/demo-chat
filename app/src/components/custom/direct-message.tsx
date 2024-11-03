@@ -24,7 +24,7 @@ interface PageProps {
   id: string
 }
 
-const Chat: FC<PageProps> = ({ id }) => {
+const DirectMessage: FC<PageProps> = ({ id }) => {
   const { address } = useAccount()
   const [auth, setAuth] = useState<SignIn | undefined>()
   const { data: messages } = useGetDirectMessages({ auth, otherUser: id as `0x${string}` })
@@ -96,4 +96,4 @@ const Chat: FC<PageProps> = ({ id }) => {
   )
 }
 
-export default Chat
+export default DirectMessage
