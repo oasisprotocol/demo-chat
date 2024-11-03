@@ -301,7 +301,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         selection.view === 'group' && selection.id === group.groupId.toString() && "bg-sidebar-accent text-sidebar-accent-foreground"
                       )}
                     >
-                      <div className="size-8 rounded-full bg-muted" />
+                      <Jazzicon diameter={32} seed={parseInt(group.groupId.toString())} />
                       <div className="grid">
                         <span className="font-medium">{group.name}</span>
                         <span className="text-xs text-muted-foreground">
