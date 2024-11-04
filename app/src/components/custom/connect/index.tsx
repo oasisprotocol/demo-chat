@@ -23,17 +23,16 @@ const Connect: FC<Props> = ({ children }) => {
 
   useEffect(() => setIsClient(true), [])
 
-  // TODO: Defaults to chat view instead of current view
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {      
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && selection.id) {
         setSelection({ view: selection.view, id: null })
       }
     }
 
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)
-  }, [setSelection])
+  }, [setSelection, selection.view, selection.id])
 
   if (!isClient) return <Loading />
   if (!address) return <Onboarding />
