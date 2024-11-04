@@ -13,7 +13,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { FC, useRef, useEffect } from "react"
+import { FC, useRef, useEffect, useState } from "react"
 import { useGetGroupMessages } from "@/hooks/use-get-group-messages"
 import { useSendGroupMessage } from "@/hooks/use-send-group-message"
 import { useAccount } from "wagmi"
@@ -72,6 +72,7 @@ const Group: FC<PageProps> = ({ id }) => {
 
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const isFirstRender = useRef(true)
+  const [isOpen, setIsOpen] = useState(true)
 
   useEffect(() => {
     if (messages?.length) {
@@ -97,28 +98,35 @@ const Group: FC<PageProps> = ({ id }) => {
     return (
       <SidebarInset>
         <div className="h-screen relative">
-          <div className="flex flex-col items-center gap-4 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="flex items-center gap-4">
-
-              <WarningIcon />
-              <h2 className="text-2xl font-semibold">Access Required</h2>
+          <header
+            className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4 cursor-pointer"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <SidebarTrigger className="-ml-1" />
+          </header>
+          {isOpen && (
+            <div className="flex flex-col items-center gap-4 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div className="flex items-center gap-4">
+                <WarningIcon />
+                <h2 className="text-2xl font-semibold">Access Required</h2>
+              </div>
+              <p className="text-center text-muted-foreground">
+                {isPending
+                  ? "Your access request is pending approval... Check back later"
+                  : "You need to be a member of this group to view messages"
+                }
+              </p>
+              {!isPending && (
+                <Button
+                  className="h-12 rounded-full w-64"
+                  disabled={requestAccess.isPending}
+                  onClick={() => requestAccess.mutateAsync()}
+                >
+                  Request Access
+                </Button>
+              )}
             </div>
-            <p className="text-center text-muted-foreground">
-              {isPending
-                ? "Your access request is pending approval... Check back later"
-                : "You need to be a member of this group to view messages"
-              }
-            </p>
-            {!isPending && (
-              <Button
-                className="h-12 rounded-full w-64"
-                disabled={requestAccess.isPending}
-                onClick={() => requestAccess.mutateAsync()}
-              >
-                Request Access
-              </Button>
-            )}
-          </div>
+          )}
         </div>
       </SidebarInset>
     )
@@ -142,7 +150,7 @@ const Group: FC<PageProps> = ({ id }) => {
         </Breadcrumb>
       </header>
       <div className="flex flex-1 flex-col min-h-0">
-        <ScrollArea 
+        <ScrollArea
           className="flex-1 w-full"
           ref={scrollAreaRef}
         >

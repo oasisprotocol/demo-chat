@@ -32,7 +32,7 @@ const IconSidebar: FC = () => {
   return (
     <Sidebar
       collapsible="none"
-      className="!w-[calc(var(--sidebar-width-icon)_+_1px)] border-r"
+      className="md:!w-[calc(var(--sidebar-width-icon)_+_1px)] w-16 border-r"
     >
       <SidebarHeader>
         <SidebarMenu>

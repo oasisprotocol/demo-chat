@@ -24,7 +24,7 @@ const ContentSidebar: FC = () => {
   const title = isDirectMessages ? "Direct Messages" : "Groups"
 
   return (
-    <Sidebar collapsible="none" className="hidden flex-1 md:flex">
+    <Sidebar collapsible="none" className="flex flex-1">
       <CreateGroupDialog
         open={createGroupOpen}
         onOpenChange={setCreateGroupOpen}
@@ -34,8 +34,8 @@ const ContentSidebar: FC = () => {
           <div className="text-base font-medium text-foreground">
             {title}
           </div>
-          <div className="min-w-20">
-            {!isDirectMessages && (
+          {!isDirectMessages && (
+            <div className="min-w-20">
               <Button
                 variant="default"
                 size="sm"
@@ -45,8 +45,8 @@ const ContentSidebar: FC = () => {
                 <Plus className="size-4" />
                 Create Group
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
         <SidebarInput
           placeholder="Search..."

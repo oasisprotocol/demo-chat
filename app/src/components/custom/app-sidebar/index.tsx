@@ -9,7 +9,7 @@ const AppSidebar: FC<ComponentProps<typeof Sidebar>> = (props) => {
   return (
     <Sidebar
       collapsible="icon"
-      className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row"
+      className="overflow-hidden [&>[data-sidebar=sidebar]]:!flex-row"
       {...props}
     >
       <IconSidebar />
