@@ -12,7 +12,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { NAV_ITEMS } from "@/lib/constants"
-import { useAccount } from "wagmi"
+import { useAccount, useDisconnect } from "wagmi"
 import { useSetAtom, useAtomValue } from "jotai"
 import { FC } from "react"
 import { selectionAtom } from "@/lib/store"
@@ -20,10 +20,11 @@ import { selectionAtom } from "@/lib/store"
 const IconSidebar: FC = () => {
   const { setOpen } = useSidebar()
   const { address } = useAccount()
+  const { disconnect } = useDisconnect()
   const setSelection = useSetAtom(selectionAtom)
   const selection = useAtomValue(selectionAtom)
 
-  const disconnect = () => {
+  const handleDisconnect = () => {
     if (address) localStorage.removeItem(`lastSignIn_${address}`)
     disconnect()
   }
@@ -78,7 +79,7 @@ const IconSidebar: FC = () => {
             children: "Disconnect",
             hidden: false,
           }}
-          onClick={disconnect}
+          onClick={handleDisconnect}
           className="px-2.5 md:px-2"
         >
           <LogOut className="size-4 text-destructive cursor-pointer" />
