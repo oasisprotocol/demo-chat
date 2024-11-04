@@ -13,7 +13,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { FC } from "react"
+import { FC, useRef, useEffect } from "react"
 import { useGetGroupMessages } from "@/hooks/use-get-group-messages"
 import { useSendGroupMessage } from "@/hooks/use-send-group-message"
 import { useAccount } from "wagmi"
@@ -30,6 +30,7 @@ import {
   FormItem,
 } from "@/components/ui/form"
 import WarningIcon from "@/icons/warning-icon"
+import { format } from "date-fns"
 
 
 interface PageProps {
@@ -69,6 +70,26 @@ const Group: FC<PageProps> = ({ id }) => {
     form.reset()
   }
 
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    if (messages?.length) {
+      const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')
+      if (viewport) {
+        if (isFirstRender.current) {
+          viewport.scrollTop = viewport.scrollHeight
+          isFirstRender.current = false
+        } else {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: 'instant'
+          })
+        }
+      }
+    }
+  }, [messages])
+
   if (!address) return null
   if (isLoading) return <div>Loading...</div>
 
@@ -104,7 +125,7 @@ const Group: FC<PageProps> = ({ id }) => {
   }
 
   return (
-    <SidebarInset>
+    <div className="flex flex-col h-screen w-full">
       <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mr-2 h-4" />
@@ -120,12 +141,31 @@ const Group: FC<PageProps> = ({ id }) => {
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      <div className="flex flex-1 flex-col">
-        <ScrollArea className="flex-1 p-4">
-          <div className="flex flex-col gap-4">
-            {messages?.map((message, index) => (
-              <ChatMessage key={index} message={message} address={address} />
-            ))}
+      <div className="flex flex-1 flex-col min-h-0">
+        <ScrollArea 
+          className="flex-1 w-full"
+          ref={scrollAreaRef}
+        >
+          <div className="flex flex-col gap-4 p-4 min-h-full">
+            {messages?.map((message, index) => {
+              const currentDate = new Date(Number(message.timestamp) * 1000);
+              const previousMessage = messages[index - 1];
+              const previousDate = previousMessage
+                ? new Date(Number(previousMessage.timestamp) * 1000)
+                : null;
+
+              const showDate = !previousDate ||
+                format(currentDate, "yyyy-MM-dd") !== format(previousDate, "yyyy-MM-dd");
+
+              return (
+                <ChatMessage
+                  key={index}
+                  message={message}
+                  address={address}
+                  showDate={showDate}
+                />
+              );
+            })}
           </div>
         </ScrollArea>
         <div className="border-t bg-background p-4">
@@ -155,7 +195,7 @@ const Group: FC<PageProps> = ({ id }) => {
           </Form>
         </div>
       </div>
-    </SidebarInset>
+    </div>
   )
 }
 

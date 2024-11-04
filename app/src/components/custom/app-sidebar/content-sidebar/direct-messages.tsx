@@ -1,7 +1,7 @@
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { Plus } from "lucide-react"
 import Jazzicon from 'react-jazzicon'
-import { cn } from "@/lib/utils"
+import { cn, copyToClipboard } from "@/lib/utils"
 import { getStoredName, shortenAddress, isValidEthereumAddress } from "@/lib/utils"
 import { SidebarGroupContent } from "@/components/ui/sidebar"
 import { FC, useState, useMemo } from "react"
@@ -10,6 +10,7 @@ import { ViewState, selectionAtom } from "@/lib/store"
 import { useGetDirectMessageContacts } from "@/hooks/use-get-direct-message-contacts"
 import RenameDialog from "@/components/common/rename-dialog"
 import { useCheckSignIn } from "@/hooks/auth/use-check-signin"
+import { toast } from "sonner"
 
 interface DirectMessagesProps {
   searchTerm: string
@@ -47,6 +48,8 @@ const DirectMessages: FC<DirectMessagesProps> = ({
     setDialogOpen(true)
   }
 
+
+
   return (
     <>
       <RenameDialog
@@ -79,6 +82,9 @@ const DirectMessages: FC<DirectMessagesProps> = ({
               <ContextMenuContent>
                 <ContextMenuItem onClick={() => handleRename(address)}>
                   Rename
+                </ContextMenuItem>
+                <ContextMenuItem onClick={() => { copyToClipboard(address); toast.success("Copied to clipboard") }}>
+                  Copy
                 </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>
