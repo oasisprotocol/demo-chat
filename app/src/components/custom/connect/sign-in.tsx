@@ -25,14 +25,14 @@ const SignIn: FC = () => {
       <div className="flex flex-col items-center gap-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-move-to-top">
         <WarningIcon />
         <h1 className="text-2xl font-bold">Sign In</h1>
-        <p className="text-center mx-12">
+        <p className="text-center mx-12 text-sm text-muted-foreground">
           Sign-in session expired. Sign this message to prove you own this wallet
           and proceed.
         </p>
       </div>
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0 animate-fade-in-delayed w-full px-6 flex justify-center">
         <Button
-          className="h-14 rounded-full max-w-lg w-full"
+          className="h-12 rounded-full max-w-lg w-full"
           onClick={handleSignIn}
           disabled={isPending}
         >

@@ -31,6 +31,7 @@ import {
 import { useCheckSignIn } from "@/hooks/auth/use-check-signin"
 import { getStoredName } from "@/lib/utils"
 import { format } from "date-fns"
+import { Badge } from "@/components/ui/badge"
 
 interface PageProps {
   id: string
@@ -110,25 +111,31 @@ const DirectMessage: FC<PageProps> = ({ id }) => {
           ref={scrollAreaRef}
         >
           <div className="flex flex-col gap-4 p-4">
-            {messages?.map((message, index) => {
-              const currentDate = new Date(Number(message.timestamp) * 1000);
-              const previousMessage = messages[index - 1];
-              const previousDate = previousMessage
-                ? new Date(Number(previousMessage.timestamp) * 1000)
-                : null;
+            {messages?.length ? (
+              messages.map((message, index) => {
+                const currentDate = new Date(Number(message.timestamp) * 1000);
+                const previousMessage = messages[index - 1];
+                const previousDate = previousMessage
+                  ? new Date(Number(previousMessage.timestamp) * 1000)
+                  : null;
 
-              const showDate = !previousDate ||
-                format(currentDate, "yyyy-MM-dd") !== format(previousDate, "yyyy-MM-dd");
+                const showDate = !previousDate ||
+                  format(currentDate, "yyyy-MM-dd") !== format(previousDate, "yyyy-MM-dd");
 
-              return (
-                <ChatMessage
-                  key={index}
-                  message={message}
-                  address={address}
-                  showDate={showDate}
-                />
-              );
-            })}
+                return (
+                  <ChatMessage
+                    key={index}
+                    message={message}
+                    address={address}
+                    showDate={showDate}
+                  />
+                );
+              })
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <Badge variant="secondary" className="rounded-full">No messages yet</Badge>
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
