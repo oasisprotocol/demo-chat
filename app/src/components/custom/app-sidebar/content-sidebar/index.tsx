@@ -56,7 +56,7 @@ const ContentSidebar: FC = () => {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          {selection.view === "dm" ? (
+          {isDirectMessages ? (
             <DirectMessages
               searchTerm={searchTerm}
               onClearSearch={() => setSearchTerm('')}

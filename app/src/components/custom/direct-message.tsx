@@ -19,33 +19,48 @@ import { useAccount } from "wagmi"
 import { useSendDirectMessage } from "@/hooks/use-send-direct-message"
 import { useGetDirectMessages } from "@/hooks/use-get-direct-messages"
 import ChatMessage from "../common/chat-message"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+} from "@/components/ui/form"
+import { useCheckSignIn } from "@/hooks/auth/use-check-signin"
+import { getStoredName } from "@/lib/utils"
 
 interface PageProps {
   id: string
 }
 
+const messageFormSchema = z.object({
+  message: z.string().min(1),
+})
+
+type MessageFormValues = z.infer<typeof messageFormSchema>
+
 const DirectMessage: FC<PageProps> = ({ id }) => {
   const { address } = useAccount()
-  const [auth, setAuth] = useState<SignIn | undefined>()
+  const { auth } = useCheckSignIn()
   const { data: messages } = useGetDirectMessages({ auth, otherUser: id as `0x${string}` })
-  const sendMessage = useSendDirectMessage()
-  const [messageContent, setMessageContent] = useState("")
+  const { mutateAsync, isPending } = useSendDirectMessage()
 
-  useEffect(() => {
-    const lastSignInData = localStorage.getItem(`lastSignIn_${address}`)
-    if (lastSignInData) {
-      setAuth(JSON.parse(lastSignInData))
-    }
-  }, [address])
+  const form = useForm<MessageFormValues>({
+    resolver: zodResolver(messageFormSchema),
+    defaultValues: {
+      message: "",
+    },
+  })
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    sendMessage.mutateAsync({
+  const onSubmit = async (data: MessageFormValues) => {
+    await mutateAsync({
       auth,
       to: id as `0x${string}`,
-      content: messageContent,
+      content: data.message,
     })
-    setMessageContent("")
+    form.reset()
   }
 
   if (!address) return null
@@ -62,7 +77,7 @@ const DirectMessage: FC<PageProps> = ({ id }) => {
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>{id}</BreadcrumbPage>
+              <BreadcrumbPage>{getStoredName(id)}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -76,20 +91,30 @@ const DirectMessage: FC<PageProps> = ({ id }) => {
           </div>
         </ScrollArea>
         <div className="border-t bg-background p-4">
-          <form className="flex gap-2" onSubmit={handleSubmit}>
-            <Input
-              placeholder="Type a message..."
-              className="flex-1"
-              value={messageContent}
-              onChange={(e) => setMessageContent(e.target.value)}
-            />
-            <Button
-              type="submit"
-              disabled={sendMessage.isPending || !messageContent.trim()}
-            >
-              {sendMessage.isPending ? "Sending..." : "Send"}
-            </Button>
-          </form>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Input
+                        placeholder="Type a message..."
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                disabled={isPending || !form.getValues("message").trim()}
+              >
+                {isPending ? "Sending..." : "Send"}
+              </Button>
+            </form>
+          </Form>
         </div>
       </div>
     </SidebarInset>
