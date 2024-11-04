@@ -6,42 +6,71 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { FC, useState } from "react"
+import { FC } from "react"
 import { useCreateGroup } from "@/hooks/use-create-group"
 import { useCheckSignIn } from "@/hooks/auth/use-check-signin"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
+const CHAIN_OPTIONS = [
+  { id: "1", name: "Ethereum Mainnet" },
+] as const
+
+const formSchema = z.object({
+  name: z.string().min(1, { message: "Group name is required" }),
+  chainId: z.string().min(1, { message: "Chain is required" }),
+  tokenAddress: z.string().min(1, { message: "Token address is required" }),
+  requiredAmount: z.string().min(1, { message: "Required amount is required" }),
+})
+
 const CreateGroupDialog: FC<Props> = ({ open, onOpenChange }) => {
-  const [groupName, setGroupName] = useState("")
-  const [tokenAddress, setTokenAddress] = useState("")
-  const [requiredAmount, setRequiredAmount] = useState("")
-  const [chainId, setChainId] = useState("1")
-
   const { auth } = useCheckSignIn()
+  const { mutateAsync: createGroup, isPending } = useCreateGroup()
 
-  const { mutateAsync: createGroup } = useCreateGroup()
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      chainId: "1",
+      tokenAddress: "",
+      requiredAmount: "",
+    },
+  })
 
-  const handleSubmit = async () => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!auth) return
 
     await createGroup({
       auth,
-      name: groupName,
-      chainId: parseInt(chainId),
-      tokenAddress: tokenAddress as `0x${string}`,
-      requiredAmount: requiredAmount
+      name: values.name,
+      chainId: parseInt(values.chainId),
+      tokenAddress: values.tokenAddress as `0x${string}`,
+      requiredAmount: values.requiredAmount
     })
 
     onOpenChange(false)
-    // Reset form
-    setGroupName("")
-    setTokenAddress("")
-    setRequiredAmount("")
-    setChainId("1")
+    form.reset()
   }
 
   return (
@@ -50,48 +79,80 @@ const CreateGroupDialog: FC<Props> = ({ open, onOpenChange }) => {
         <DialogHeader>
           <DialogTitle>Create New Group</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Group Name</label>
-            <Input
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              placeholder="Enter group name"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Group Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter group name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Chain ID</label>
-            <Input
-              type="number"
-              value={chainId}
-              onChange={(e) => setChainId(e.target.value)}
-              placeholder="Enter chain ID"
+
+            <FormField
+              control={form.control}
+              name="chainId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Chain</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select chain" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {CHAIN_OPTIONS.map((chain) => (
+                        <SelectItem key={chain.id} value={chain.id}>
+                          {chain.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Token Address</label>
-            <Input
-              value={tokenAddress}
-              onChange={(e) => setTokenAddress(e.target.value)}
-              placeholder="Enter token address"
+
+            <FormField
+              control={form.control}
+              name="tokenAddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Token Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter token address" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Required Amount</label>
-            <Input
-              type="number"
-              value={requiredAmount}
-              onChange={(e) => setRequiredAmount(e.target.value)}
-              placeholder="Enter required token amount"
+
+            <FormField
+              control={form.control}
+              name="requiredAmount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Required Amount</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Enter required token amount" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <Button
-            onClick={handleSubmit}
-            disabled={!groupName || !tokenAddress || !requiredAmount || !chainId}
-          >
-            Create Group
-          </Button>
-        </div>
+
+            <Button type="submit" disabled={!form.formState.isValid || isPending} className="w-full">
+              Create Group
+            </Button>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
