@@ -13,18 +13,34 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { FC, useState, FormEvent } from "react"
+import { FC } from "react"
 import { useGetGroupMessages } from "@/hooks/use-get-group-messages"
 import { useSendGroupMessage } from "@/hooks/use-send-group-message"
 import { useAccount } from "wagmi"
 import ChatMessage from "../common/chat-message"
 import { useCheckSignIn } from "@/hooks/auth/use-check-signin"
 import { useCheckGroupAccess } from "@/hooks/use-check-group-access"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+} from "@/components/ui/form"
+import WarningIcon from "@/icons/warning-icon"
 
 
 interface PageProps {
   id: string
 }
+
+const messageFormSchema = z.object({
+  message: z.string().min(1),
+})
+
+type MessageFormValues = z.infer<typeof messageFormSchema>
 
 const Group: FC<PageProps> = ({ id }) => {
   const { address } = useAccount()
@@ -35,17 +51,22 @@ const Group: FC<PageProps> = ({ id }) => {
     address: address as `0x${string}`,
   })
   const { data: messages } = useGetGroupMessages(auth, Number(id))
-  const sendMessage = useSendGroupMessage()
-  const [messageContent, setMessageContent] = useState("")
+  const { mutateAsync, isPending: isSendingMessage } = useSendGroupMessage()
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    sendMessage.mutateAsync({
+  const form = useForm<MessageFormValues>({
+    resolver: zodResolver(messageFormSchema),
+    defaultValues: {
+      message: "",
+    },
+  })
+
+  const onSubmit = async (data: MessageFormValues) => {
+    await mutateAsync({
       auth,
       groupId: Number(id),
-      content: messageContent,
+      content: data.message,
     })
-    setMessageContent("")
+    form.reset()
   }
 
   if (!address) return null
@@ -54,15 +75,29 @@ const Group: FC<PageProps> = ({ id }) => {
   if (!isMember) {
     return (
       <SidebarInset>
-        <div className="flex flex-col items-center justify-center h-full gap-4 p-4">
-          <h2 className="text-xl font-semibold">Access Required</h2>
-          <p className="text-center text-muted-foreground">
-            {isPending
-              ? "Your access request is pending approval"
-              : "You need to be a member of this group to view messages"
-            }
-          </p>
-          {!isPending && <Button onClick={() => requestAccess.mutateAsync()}>Request Access</Button>}
+        <div className="h-screen relative">
+          <div className="flex flex-col items-center gap-4 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="flex items-center gap-4">
+
+              <WarningIcon />
+              <h2 className="text-2xl font-semibold">Access Required</h2>
+            </div>
+            <p className="text-center text-muted-foreground">
+              {isPending
+                ? "Your access request is pending approval... Check back later"
+                : "You need to be a member of this group to view messages"
+              }
+            </p>
+            {!isPending && (
+              <Button
+                className="h-12 rounded-full w-64"
+                disabled={requestAccess.isPending}
+                onClick={() => requestAccess.mutateAsync()}
+              >
+                Request Access
+              </Button>
+            )}
+          </div>
         </div>
       </SidebarInset>
     )
@@ -94,20 +129,30 @@ const Group: FC<PageProps> = ({ id }) => {
           </div>
         </ScrollArea>
         <div className="border-t bg-background p-4">
-          <form className="flex gap-2" onSubmit={handleSubmit}>
-            <Input
-              placeholder="Type a message..."
-              className="flex-1"
-              value={messageContent}
-              onChange={(e) => setMessageContent(e.target.value)}
-            />
-            <Button
-              type="submit"
-              disabled={sendMessage.isPending || !messageContent.trim()}
-            >
-              {sendMessage.isPending ? "Sending..." : "Send"}
-            </Button>
-          </form>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Input
+                        placeholder="Type a message..."
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                disabled={isSendingMessage || !form.getValues("message").trim()}
+              >
+                {isSendingMessage ? "Sending..." : "Send"}
+              </Button>
+            </form>
+          </Form>
         </div>
       </div>
     </SidebarInset>
