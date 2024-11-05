@@ -20,9 +20,6 @@ importers:
       '@oasisprotocol/sapphire-hardhat':
         specifier: ^2.19.4
         version: 2.19.4(hardhat@2.22.6(ts-node@10.9.2(@types/node@20.14.11)(typescript@5.5.3))(typescript@5.5.3))
-      '@openzeppelin/contracts':
-        specifier: ^5.0.2
-        version: 5.0.2
       '@types/chai':
         specifier: ^4.3.16
         version: 4.3.16
