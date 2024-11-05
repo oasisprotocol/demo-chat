@@ -1,4 +1,4 @@
-# CraneChat (demo-chat)
+# 🏗️ CraneChat (demo-chat)
 
 An E2E encrypted chat with token gated group chats built on Oasis Sapphire with ROFL.
 
@@ -13,14 +13,14 @@ CraneChat is a decentralized chat application that provides:
 
 The application consists of:
 - Smart contracts deployed on Oasis Sapphire
-- ROFL service for off-chain token balance verification
+- ROFL application for off-chain token balance verification
 - Next.js frontend with Wagmi for web3 integration
 
-## Pre-requisites
+## Directory Structure
 
-- Node.js 18+
-- Rust toolchain (for ROFL development)
-- Hardhat
+- `app`: Next.js frontend
+- `root`: Smart contracts
+- `rofl`: ROFL application
 
 ## Setup
 
@@ -28,23 +28,15 @@ The application consists of:
 
 ```sh
 pnpm install
+cd app
+pnpm install
 ```
 
 2. Configure environment variables:
 
 ```sh
-cp .env.example .env
+cp .env.template .env
 ```
-
-3. Deploy contracts:
-
-To be deployed after ROFL is running.
-
-```sh
-npx hardhat deploy --network sapphire-localnet
-```
-
-4. Update the contract address in `app/.env.local`
 
 ## Running
 
@@ -59,7 +51,13 @@ pnpm dev
 
 Check the ([`rofl/README.md`](./rofl/README.md)) for instructions on running the ROFL service.
 
-3. To populate test groups (optional):
+3. Deploy contracts:
+
+```sh
+npx hardhat deploy --network sapphire-localnet
+```
+
+4. To populate test groups (optional):
 
 ```sh
 npx hardhat populate --network sapphire-localnet --contract <CONTRACT_ADDRESS>
