@@ -1,84 +1,66 @@
-# Sample Hardhat Project
+# CraneChat (demo-chat)
 
-## Tutorial
+An E2E encrypted chat with token gated group chats built on Oasis Sapphire with ROFL.
 
-<https://github.com/t4sk/hello-foundry>
+## How It Works
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+CraneChat is a decentralized chat application that provides:
 
-Try running some of the following tasks:
+1. **Token Gated Group Chats**: Create groups that require members to hold specific token amounts on supported chains to join
+2. **Direct Messaging**: Send encrypted messages directly to other users
+3. **E2E Encryption**: All messages are encrypted using Oasis Sapphire's confidential smart contracts
+4. **ROFL Integration**: Automated token balance verification using ROFL (Remote Offchain Fault-tolerant Logic)
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
+The application consists of:
+- Smart contracts deployed on Oasis Sapphire
+- ROFL service for off-chain token balance verification
+- Next.js frontend with Wagmi for web3 integration
+
+## Pre-requisites
+
+- Node.js 18+
+- Rust toolchain (for ROFL development)
+- Hardhat
+
+## Setup
+
+1. Install dependencies:
+
+```sh
+pnpm install
 ```
 
-## Foundry
+2. Configure environment variables:
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
-
-Foundry consists of:
-
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-<https://book.getfoundry.sh/>
-
-## Usage
-
-### Build
-
-```shell
-forge build
+```sh
+cp .env.example .env
 ```
 
-### Test
+3. Deploy contracts:
 
-```shell
-forge test
+To be deployed after ROFL is running.
+
+```sh
+npx hardhat deploy --network sapphire-localnet
 ```
 
-### Format
+4. Update the contract address in `app/.env.local`
 
-```shell
-forge fmt
+## Running
+
+1. Start the frontend development server:
+
+```sh
+cd app
+pnpm dev
 ```
 
-### Gas Snapshots
+2. For local ROFL development:
 
-```shell
-forge snapshot
-```
+Check the ([`rofl/README.md`](./rofl/README.md)) for instructions on running the ROFL service.
 
-### Anvil
+3. To populate test groups (optional):
 
-```shell
-anvil
-```
-
-### Deploy
-
-```shell
-forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-cast <subcommand>
-```
-
-### Help
-
-```shell
-forge --help
-anvil --help
-cast --help
+```sh
+npx hardhat populate --network sapphire-localnet --contract <CONTRACT_ADDRESS>
 ```

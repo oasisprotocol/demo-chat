@@ -19,7 +19,6 @@ The application consists of two main components:
 ## Prerequisites
 
 - Oasis ROFL SDK
-- Hardhat
 - Docker
 - Rust toolchain
 
