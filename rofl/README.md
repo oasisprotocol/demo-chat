@@ -1,4 +1,4 @@
-# ROFL (Runtime Oracle For Logic) App
+# ROFL (Runtime OFf-chain Logic) App
 
 ROFL is a decentralized messaging application that manages group memberships based on token holdings. It serves as an off-chain oracle that verifies token balances and automatically manages group memberships.
 
