@@ -13,7 +13,7 @@ const Providers: FC<{
   children: ReactNode
 }> = ({ children }) => {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
           <Connect>
