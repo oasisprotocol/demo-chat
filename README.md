@@ -2,6 +2,10 @@
 
 An E2E encrypted chat with token gated group chats built on Oasis Sapphire with ROFL.
 
+## !! Disclaimer !!
+
+This is a demo application and should not be used in production.
+
 ## How It Works
 
 CraneChat is a decentralized chat application that provides:
