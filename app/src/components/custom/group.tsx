@@ -178,7 +178,8 @@ const Group: FC<PageProps> = ({ id }) => {
               })
             ) : (
               <div className="flex items-center justify-center h-full">
-                <Badge variant="secondary" className="rounded-full">No messages yet</Badge>
+                <Badge variant="secondary" className="font-normal border px-3 py-1.5">
+                  No messages yet</Badge>
               </div>
             )}
           </div>

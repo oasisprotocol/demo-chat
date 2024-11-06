@@ -106,8 +106,8 @@ const DirectMessage: FC<PageProps> = ({ id }) => {
       </header>
 
       <div className="flex-1 min-h-0">
-        <ScrollArea 
-          className="h-full" 
+        <ScrollArea
+          className="h-full"
           ref={scrollAreaRef}
         >
           <div className="flex flex-col gap-4 p-4">
@@ -133,7 +133,8 @@ const DirectMessage: FC<PageProps> = ({ id }) => {
               })
             ) : (
               <div className="flex items-center justify-center h-full">
-                <Badge variant="secondary" className="rounded-full">No messages yet</Badge>
+                <Badge variant="secondary" className="font-normal border px-3 py-1.5">
+                  No messages yet</Badge>
               </div>
             )}
           </div>

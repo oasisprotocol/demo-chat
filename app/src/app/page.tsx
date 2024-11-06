@@ -24,7 +24,7 @@ const Home: NextPage = () => {
         <SidebarTrigger className="-ml-1" />
       </header>
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
-        <Badge variant="secondary" className="font-normal rounded-full px-3 py-1.5">
+        <Badge variant="secondary" className="font-normal border px-3 py-1.5">
           Select a chat to start messaging
         </Badge>
       </div>

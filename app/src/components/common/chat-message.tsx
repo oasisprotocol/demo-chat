@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { FC } from "react";
 import Jazzicon from "react-jazzicon";
+import { Badge } from "../ui/badge";
 
 interface Props {
   message: Message;
@@ -17,9 +18,9 @@ const ChatMessage: FC<Props> = ({ message, address, showDate }) => {
     <div className="flex flex-col gap-2">
       {showDate && (
         <div className="flex items-center justify-center my-4">
-          <div className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
+          <Badge variant="secondary" className="font-normal border px-3 py-1.5">
             {format(messageDate, "MMMM d, yyyy")}
-          </div>
+          </Badge>
         </div>
       )}
       <div
