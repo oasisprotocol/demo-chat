@@ -2,6 +2,7 @@
 pragma solidity ^0.8.27;
 
 interface IMessaging {
+    /// @notice Struct to store a message
     struct Message {
         address sender;
         string content;
