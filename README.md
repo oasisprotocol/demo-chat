@@ -22,9 +22,9 @@ The application consists of:
 
 ## Directory Structure
 
-- `app`: Next.js frontend
-- `root`: Smart contracts
-- `rofl`: ROFL application
+- `/` (root): Smart contracts (Hardhat project)
+- `app/`: Next.js frontend
+- `rofl/`: ROFL application
 
 ## Setup
 
